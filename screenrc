@@ -1,0 +1,4 @@
+startup_message off
+defscrollback 10000
+escape ^za
+shell -$SHELL

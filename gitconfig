@@ -1,0 +1,38 @@
+[user]
+        name = Jeff Ames
+        email = jeffames@gmail.com
+[alias]
+        a = add
+        b = branch
+        co = checkout
+        d = diff
+        f = fetch
+        l = log
+        p = push
+        s = status
+        sm = submodule
+
+        r = reset
+        r1 = reset HEAD^
+        r2 = reset HEAD^^
+        rh = reset --hard
+        r1h = reset HEAD^ --hard
+        r2h = reset HEAD^^ --hard
+
+        ai = add --interactive
+        bav = branch -a -v
+        bv = branch -v
+        # add -C HEAD to caa?
+        caa = commit -a --amend
+        caam = commit -a --amend -m
+        cam = commit -a -m
+        ci = commit
+        cm = commit -m
+        lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --
+        cp = cherry-pick
+        rb = rebase
+        who = shortlog -s --
+        lc = log ORIG_HEAD.. --stat --no-merges
+        llog = log --date=local
+[core]
+        excludesfile = ~/.gitignore_global

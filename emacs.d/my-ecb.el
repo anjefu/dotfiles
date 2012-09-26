@@ -1,0 +1,8 @@
+(add-to-list 'load-path "~/.emacs.d/lisp/ecb-2.40")
+(require 'ecb)
+(setq ecb-tip-of-the-day nil)
+(setq ecb-tree-buffer-style 'ascii-guides)
+(setq ecb-source-path (quote (("~/projects" "projects"))))
+(setq ecb-options-version "2.40")
+(ecb-activate)
+(provide 'my-ecb)

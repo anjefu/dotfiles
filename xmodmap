@@ -1,0 +1,13 @@
+! Fix missing keys when using Japanese keyboard
+keycode 97 = grave asciitilde
+keycode 132 = backslash bar
+
+! Get rid of any caps lock keys
+clear Lock
+
+! Map caps lock to control
+keysym Caps_Lock = Control_L
+
+! Make Control_R act like another super key
+remove control = Control_R
+add mod4 = Control_R

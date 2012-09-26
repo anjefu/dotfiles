@@ -1,0 +1,5 @@
+[ui]
+username = Jeff Ames <jeffames@gmail.com>
+
+[extensions]
+hgext.rebase =
