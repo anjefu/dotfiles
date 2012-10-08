@@ -1,3 +1,6 @@
+(setq-default c-basic-offset 4
+              tab-width 4)
+
 (defun my-c-mode-common-hook ()
   (c-set-offset 'substatement-open 0)
   (c-set-offset 'statement-cont 4)
@@ -5,12 +8,17 @@
   (c-set-offset 'block-open 0)
   (c-set-offset 'arglist-intro 4)
   (c-set-offset 'arglist-cont-nonempty 4)
-  (c-set-offset 'cpp-macro 'csharp-lineup-region)
+;  (c-set-offset 'cpp-macro 'csharp-lineup-region)
   (c-set-offset 'inline-open 0)
   (c-set-offset 'case-label 4)
   (c-toggle-auto-newline 1)
   (define-key c-mode-map [(ctrl tab)] 'complete-tag))
 (add-hook 'c-mode-common-hook 'my-c-mode-common-hook)
+
+(defun my-csharp-mode-hook ()
+  (turn-on-font-lock)
+  (define-key csharp-mode-map "\t" 'c-tab-indent-or-complete))
+(add-hook 'csharp-mode-hook 'my-csharp-mode-hook)
 
 (add-hook 'c-mode-common-hook 'hs-minor-mode)
 (add-hook 'python-mode-hook 'hs-minor-mode)

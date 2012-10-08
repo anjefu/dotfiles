@@ -6,7 +6,6 @@
 (require 'my-w3m)
 (require 'my-modes)
 (require 'my-text-mode)
-(require 'my-csharp-mode)
 (require 'my-objc-mode)
 (require 'my-cmake-mode)
 (require 'my-clisp)
