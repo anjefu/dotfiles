@@ -36,3 +36,5 @@
         llog = log --date=local
 [core]
         excludesfile = ~/.gitignore_global
+[push]
+        default = simple
