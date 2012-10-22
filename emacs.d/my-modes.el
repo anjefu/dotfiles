@@ -20,6 +20,10 @@
   (define-key csharp-mode-map "\t" 'c-tab-indent-or-complete))
 (add-hook 'csharp-mode-hook 'my-csharp-mode-hook)
 
+(add-hook 'latex-mode-hook
+          (lambda()
+            (auto-fill-mode 1)))
+
 (add-hook 'c-mode-common-hook 'hs-minor-mode)
 (add-hook 'python-mode-hook 'hs-minor-mode)
 
