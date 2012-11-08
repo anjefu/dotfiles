@@ -1,3 +1,9 @@
+path_remove()  { export PATH=`echo -n $PATH | awk -v RS=: -v ORS=: '$0 != "'$1'"' | sed 's/:$//'`; }
+
+if [[ :$PATH: == *:.:* ]]; then
+    path_remove .
+fi
+
 # Setting PATH -- last entries take priority
 export PATH="/usr/local/bin:${PATH}"
 export PATH="/usr/local/sbin:${PATH}"
@@ -20,8 +26,14 @@ else
    alias ls="ls --color=auto"
 fi
 
-alias g="git"
-alias l="ls"
-alias lal="ls -al"
-alias ll="ls -l"
-alias lss="ls -lSr"
+alias g='git'
+alias l='ls'
+alias lal='ls -al'
+alias ll='ls -l'
+alias lss='ls -lSr'
+
+cl() {
+     cd $1 && ll
+}
+
+unset -f path_remove
