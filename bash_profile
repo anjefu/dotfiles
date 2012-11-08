@@ -26,6 +26,10 @@ else
    alias ls="ls --color=auto"
 fi
 
+# CUDA settings
+export PATH="/usr/local/cuda/bin:${PATH}"
+export DYLD_LIBRARY_PATH="/usr/local/cuda/lib:${DYLD_LIBRARY_PATH}"
+
 alias g='git'
 alias l='ls'
 alias lal='ls -al'

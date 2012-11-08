@@ -31,6 +31,7 @@
 (autoload 'ledger-mode "ledger" "Ledger mode." t)
 
 (add-to-list 'auto-mode-alist '("\\.cl$" . lisp-mode))
+(add-to-list 'auto-mode-alist '("\\.cu$" . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.cs$" . csharp-mode))
 (add-to-list 'auto-mode-alist '("\\.command$" . sh-mode))
 (add-to-list 'auto-mode-alist '("\\.i$" . c++-mode))
