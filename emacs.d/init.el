@@ -26,4 +26,8 @@
 ; (require 'my-bbdb)
 (require 'my-ido)
 (require 'my-windows)
+
+(if (file-exists-p "my-wanderlust.el")
+    (require 'my-wanderlust))
+
 (require 'my-server)
