@@ -3,14 +3,34 @@
         email = jeffames@gmail.com
 [alias]
         a = add
+        ai = add --interactive
+
         b = branch
+        bav = branch -a -v
+        bv = branch -v
+
+        # add -C HEAD to caa?
+        caa = commit -a --amend
+        caam = commit -a --amend -m
+        cam = commit -a -m
+        ci = commit
+        cm = commit -m
+
         co = checkout
+        cp = cherry-pick
         d = diff
         f = fetch
+
         l = log
+        lc = log ORIG_HEAD.. --stat --no-merges
+        lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --
+        ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate --numstat
+        llog = log --date=local
+        ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cblue\\ [%cn]" --decorate
+
         p = push
-        s = status
-        sm = submodule
+
+        rb = rebase
 
         r = reset
         r1 = reset HEAD^
@@ -19,21 +39,10 @@
         r1h = reset HEAD^ --hard
         r2h = reset HEAD^^ --hard
 
-        ai = add --interactive
-        bav = branch -a -v
-        bv = branch -v
-        # add -C HEAD to caa?
-        caa = commit -a --amend
-        caam = commit -a --amend -m
-        cam = commit -a -m
-        ci = commit
-        cm = commit -m
-        lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --abbrev-commit --
-        cp = cherry-pick
-        rb = rebase
+        s = status
+        sm = submodule
+
         who = shortlog -s --
-        lc = log ORIG_HEAD.. --stat --no-merges
-        llog = log --date=local
 [core]
         excludesfile = ~/.gitignore_global
 [push]
