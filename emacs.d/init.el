@@ -1,6 +1,7 @@
 (add-to-list 'load-path (expand-file-name "~/.emacs.d"))
 
 (require 'my-package)
+(require 'my-el-get)
 (require 'my-generic)
 (require 'my-theme)
 (require 'my-w3m)
