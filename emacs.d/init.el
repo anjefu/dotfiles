@@ -27,6 +27,7 @@
 ; (require 'my-bbdb)
 (require 'my-ido)
 (require 'my-windows)
+(require 'my-markdown)
 
 (if (file-exists-p "my-wanderlust.el")
     (require 'my-wanderlust))
