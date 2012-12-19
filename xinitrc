@@ -1,7 +1,13 @@
+# Set background image
 xloadimage -onroot -tile ~/projects/machine-setup/backgrounds/textured-grey.png
+
+# Set up keyboard
+# Note: xmodmap must happen after setxkbmap
 setxkbmap dvorak
-xmodmap ~/.xmodmap   # Note: xmodmap must happen after setxkbmap
+xmodmap ~/.xmodmap
+
 xrdb -merge ~/.Xresources
+
 xsetroot -cursor_name left_ptr
 
 # Set keyboard repeat to 200 ms delay, 60 repeats per second
