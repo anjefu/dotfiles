@@ -5,3 +5,4 @@ XTerm*Foreground: gray
 XTerm*saveLines: 1000
 XTerm*HiForeColor: white
 XTerm*HiBackColor: #c06077
+XTerm.*backarrowKey: false
