@@ -28,6 +28,7 @@
 (require 'my-ido)
 (require 'my-windows)
 (require 'my-markdown)
+(require 'my-proofgeneral)
 
 (if (file-exists-p "my-wanderlust.el")
     (require 'my-wanderlust))
