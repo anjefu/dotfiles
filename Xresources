@@ -2,6 +2,7 @@
 
 XTerm*Background: black
 XTerm*Foreground: gray
+XTerm*initialFont: 5
 XTerm*saveLines: 1000
 XTerm*HiForeColor: white
 XTerm*HiBackColor: #c06077
