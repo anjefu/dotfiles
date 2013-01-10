@@ -1,5 +1,5 @@
 # Set background image
-xloadimage -onroot -tile ~/projects/machine-setup/backgrounds/textured-grey.png
+feh --bg-scale ~/projects/machine-setup/backgrounds/IDI_018.jpg
 
 # Set up keyboard
 # Note: xmodmap must happen after setxkbmap
