@@ -8,7 +8,7 @@
   (find-file "~/projects/org/inbox.org"))
 (define-key global-map "\C-ca" 'org-agenda)
 (setq org-todo-keywords '("TODO" "STARTED" "WAITING" "DONE"))
-(setq org-agenda-files '("~/projects/org/inbox.org"))
+(setq org-agenda-files (file-expand-wildcards "~/projects/org/*.org"))
 ; (setq org-agenda-include-diary t)
 (setq org-agenda-include-all-todo t)
 (setq org-directory "~/projects/org")
