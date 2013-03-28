@@ -5,9 +5,8 @@
         a = add
         ai = add --interactive
 
-        b = branch
-        bav = branch -a -v
-        bv = branch -v
+        b = branch -v
+        ba = branch -a -v
 
         # add -C HEAD to caa?
         caa = commit -a --amend
