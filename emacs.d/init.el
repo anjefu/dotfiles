@@ -30,7 +30,7 @@
 (require 'my-markdown)
 (require 'my-proofgeneral)
 
-(if (file-exists-p "my-wanderlust.el")
+(if (file-exists-p "~/.emacs.d/my-wanderlust.el")
     (require 'my-wanderlust))
 
 (require 'my-server)
