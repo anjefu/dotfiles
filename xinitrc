@@ -6,12 +6,14 @@ feh --bg-scale ~/projects/machine-setup/backgrounds/IDI_018.jpg
 setxkbmap dvorak
 xmodmap ~/.xmodmap
 
+# Set keyboard repeat to 200 ms delay, 60 repeats per second
+xset r rate 200 60
+
 xrdb -merge ~/.Xresources
 
 xsetroot -cursor_name left_ptr
 
-# Set keyboard repeat to 200 ms delay, 60 repeats per second
-xset r rate 200 60
+mpd ~/.mpdconf
 
 # Set up SCIM input method
 export XMODIFIERS=@im=SCIM
