@@ -10,9 +10,10 @@ Config { font = "-misc-fixed-*-*-*-*-10-*-*-*-*-*-*-*"
                     , Run Memory ["-t","Mem: <usedratio>%"] 10
 --                    , Run Swap [] 10
                     , Run Com "uname" ["-s","-r"] "" 36000
+                    , Run Com "acpi" ["-b"] "" 600
                     , Run Date "%a %b %_d %Y %H:%M" "date" 10
                     ]
        , sepChar = "%"
        , alignSep = "}{"
-       , template = "%cpu% | %memory% | %wlan0% }{ <fc=#ee9a00>%date%</fc> | %KTTN% | %uname%"
+       , template = "%cpu% | %memory% | %wlan0% }{ <fc=#ee9a00>%date%</fc> | %KTTN% | %uname% | %acpi%"
        }
