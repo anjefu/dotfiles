@@ -1,3 +1,6 @@
+(load "auctex.el" nil t t)
+(load "preview-latex.el" nil t t)
+
 (defun latex-word-count ()
   (interactive)
   (shell-command (concat "/usr/bin/texcount "
