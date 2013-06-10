@@ -1,5 +1,5 @@
-# Set background image
-feh --bg-scale ~/projects/machine-setup/backgrounds/IDI_018.jpg
+# Set background
+xsetroot -solid '#333'
 
 # Set up keyboard
 # Note: xmodmap must happen after setxkbmap
