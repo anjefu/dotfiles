@@ -1,5 +1,6 @@
 emacs.d/auto-save-list
 emacs.d/el-get
+emacs.d/my-wanderlust.el
 emacs.d/tramp
 xmonad/xmonad.errors
 xmonad/xmonad.hi
