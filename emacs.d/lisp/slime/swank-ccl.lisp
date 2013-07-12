@@ -1,64 +1,19 @@
-;;;; -*- Mode: lisp; indent-tabs-mode: nil -*-
+;;;; -*- indent-tabs-mode: nil -*-
 ;;;
-;;; openmcl-swank.lisp --- SLIME backend for OpenMCL.
+;;; swank-ccl.lisp --- SLIME backend for Clozure CL.
 ;;;
 ;;; Copyright (C) 2003, James Bielman  <jamesjb@jamesjb.com>
 ;;;
 ;;; This program is licensed under the terms of the Lisp Lesser GNU
-;;; Public License, known as the LLGPL, and distributed with OpenMCL
+;;; Public License, known as the LLGPL, and distributed with Clozure CL
 ;;; as the file "LICENSE".  The LLGPL consists of a preamble and the
-;;; LGPL, which is distributed with OpenMCL as the file "LGPL".  Where
+;;; LGPL, which is distributed with Clozure CL as the file "LGPL".  Where
 ;;; these conflict, the preamble takes precedence.
 ;;;
 ;;; The LLGPL is also available online at
 ;;; http://opensource.franz.com/preamble.html
 
-;;;
-;;; This is the beginning of a Slime backend for OpenMCL.  It has been
-;;; tested only with OpenMCL version 0.14-030901 on Darwin --- I would
-;;; be interested in hearing the results with other versions.
-;;;
-;;; Additionally, reporting the positions of warnings accurately requires
-;;; a small patch to the OpenMCL file compiler, which may be found at:
-;;;
-;;;   http://www.jamesjb.com/slime/openmcl-warning-position.diff
-;;;
-;;; Things that work:
-;;;
-;;; * Evaluation of forms with C-M-x.
-;;; * Compilation of defuns with C-c C-c.
-;;; * File compilation with C-c C-k.
-;;; * Most of the debugger functionality, except EVAL-IN-FRAME,
-;;;   FRAME-SOURCE-LOCATION, and FRAME-CATCH-TAGS.
-;;; * Macroexpanding with C-c RET.
-;;; * Disassembling the symbol at point with C-c M-d.
-;;; * Describing symbol at point with C-c C-d.
-;;; * Compiler warnings are trapped and sent to Emacs using the buffer
-;;;   position of the offending top level form.
-;;; * Symbol completion and apropos.
-;;;
-;;; Things that sort of work:
-;;;
-;;; * WHO-CALLS is implemented but is only able to return the file a
-;;;   caller is defined in---source location information is not
-;;;   available.
-;;;
-;;; Things that aren't done yet:
-;;;
-;;; * Cross-referencing.
-;;; * Due to unimplementation functionality the test suite does not
-;;;   run correctly (it hangs upon entering the debugger).
-;;;
-
 (in-package :swank-backend)
-
-;; Backward compatibility
-(eval-when (:compile-toplevel)
-  (unless (fboundp 'ccl:compute-applicable-methods-using-classes)
-    (compile-file (make-pathname :name "swank-openmcl" :type "lisp" :defaults swank-loader::*source-directory*)
-                  :output-file (make-pathname :name "swank-ccl" :defaults swank-loader::*fasl-directory*)
-                  :verbose t)
-    (invoke-restart (find-restart 'ccl::skip-compile-file))))
 
 (eval-when (:compile-toplevel :execute :load-toplevel)
   (assert (and (= ccl::*openmcl-major-version* 1)
@@ -68,7 +23,9 @@
 (import-from :ccl *gray-stream-symbols* :swank-backend)
 
 (eval-when (:compile-toplevel :load-toplevel :execute)
-  (require 'xref))
+  (multiple-value-bind (ok err) (ignore-errors (require 'xref))
+    (unless ok
+      (warn "~a~%" err))))
 
 ;;; swank-mop
 
@@ -127,16 +84,23 @@
   (let ((str (symbol-name sym)))
     `(or (find-symbol ,str :swank)
          (error "There is no symbol named ~a in the SWANK package" ,str))))
+;;; UTF8
 
+(defimplementation string-to-utf8 (string)
+  (ccl:encode-string-to-octets string :external-format :utf-8))
+
+(defimplementation utf8-to-string (octets)
+  (ccl:decode-string-from-octets octets :external-format :utf-8))
 
 ;;; TCP Server
 
 (defimplementation preferred-communication-style ()
   :spawn)
 
-(defimplementation create-socket (host port)
+(defimplementation create-socket (host port &key backlog)
   (ccl:make-socket :connect :passive :local-port port 
-                   :local-host host :reuse-address t))
+                   :local-host host :reuse-address t
+                   :backlog (or backlog 5)))
 
 (defimplementation local-port (socket)
   (ccl:local-port socket))
@@ -145,11 +109,11 @@
   (close socket))
 
 (defimplementation accept-connection (socket &key external-format
-                                             buffering timeout)
+                                      buffering timeout)
   (declare (ignore buffering timeout))
-  (ccl:accept-connection socket :wait t
-                         :stream-args (and external-format
-                                           `(:external-format ,external-format))))
+  (let ((stream-args (and external-format
+                          `(:external-format ,external-format))))
+    (ccl:accept-connection socket :wait t :stream-args stream-args)))
 
 (defvar *external-format-to-coding-system*
   '((:iso-8859-1 
@@ -161,13 +125,10 @@
   (car (rassoc-if (lambda (x) (member coding-system x :test #'equal))
                   *external-format-to-coding-system*)))
 
-;;; Unix signals
+(defimplementation socket-fd (stream)
+  (ccl::ioblock-device (ccl::stream-ioblock stream t)))
 
-(defimplementation call-without-interrupts (fn)
-  ;; This prevents the current thread from being interrupted, but it doesn't
-  ;; keep other threads from running concurrently, so it's not an appropriate
-  ;; replacement for locking.
-  (ccl:without-interrupts (funcall fn)))
+;;; Unix signals
 
 (defimplementation getpid ()
   (ccl::getpid))
@@ -197,16 +158,15 @@
 
 (defun handle-compiler-warning (condition)
   "Resignal a ccl:compiler-warning as swank-backend:compiler-warning."
-  (signal (make-condition
-           'compiler-condition
-           :original-condition condition
-           :message (compiler-warning-short-message condition)
-           :source-context nil
-           :severity (compiler-warning-severity condition)
-           :location (source-note-to-source-location 
-                      (ccl:compiler-warning-source-note condition)
-                      (lambda () "Unknown source")
-                      (ccl:compiler-warning-function-name condition)))))
+  (signal 'compiler-condition
+          :original-condition condition
+          :message (compiler-warning-short-message condition)
+          :source-context nil
+          :severity (compiler-warning-severity condition)
+          :location (source-note-to-source-location 
+                     (ccl:compiler-warning-source-note condition)
+                     (lambda () "Unknown source")
+                     (ccl:compiler-warning-function-name condition))))
 
 (defgeneric compiler-warning-severity (condition))
 (defmethod compiler-warning-severity ((c ccl:compiler-warning)) :warning)
@@ -220,21 +180,28 @@
   (with-output-to-string (stream)
     (ccl:report-compiler-warning c stream :short t)))
 
+;; Needed because `ccl:report-compiler-warning' would return
+;; "Nonspecific warning".
+(defmethod compiler-warning-short-message ((c ccl::shadowed-typecase-clause))
+  (princ-to-string c))
+
 (defimplementation call-with-compilation-hooks (function)
   (handler-bind ((ccl:compiler-warning 'handle-compiler-warning))
     (let ((ccl:*merge-compiler-warnings* nil))
       (funcall function))))
 
 (defimplementation swank-compile-file (input-file output-file
-                                       load-p external-format)
+                                       load-p external-format
+                                       &key policy)
+  (declare (ignore policy))
   (with-compilation-hooks ()
     (compile-file input-file 
                   :output-file output-file 
                   :load load-p
                   :external-format external-format)))
 
-;; Use a temp file rather than in-core compilation in order to handle eval-when's
-;; as compile-time.
+;; Use a temp file rather than in-core compilation in order to handle
+;; eval-when's as compile-time.
 (defimplementation swank-compile-string (string &key buffer position filename
                                          policy)
   (declare (ignore policy))
@@ -244,7 +211,7 @@
       (unwind-protect
            (progn
              (with-open-file (s temp-file-name :direction :output 
-                                :if-exists :error)
+                                :if-exists :error :external-format :utf-8)
                (write-string string s))
              (let ((binary-filename (compile-temp-file
                                      temp-file-name filename buffer position)))
@@ -263,7 +230,8 @@
                       (setf (gethash temp-file-name *temp-file-map*)
                             buffer-name)
                       temp-file-name))
-                :compile-file-original-buffer-offset (1- offset)))
+                :compile-file-original-buffer-offset (1- offset)
+                :external-format :utf-8))
 
 (defimplementation save-image (filename &optional restart-function)
   (ccl:save-application filename :toplevel-function restart-function))
@@ -274,8 +242,8 @@
   (delete-duplicates
    (mapcan #'find-definitions
            (if inverse 
-             (ccl:get-relation relation name :wild :exhaustive t)
-             (ccl:get-relation relation :wild name :exhaustive t)))
+             (ccl::get-relation relation name :wild :exhaustive t)
+             (ccl::get-relation relation :wild name :exhaustive t)))
    :test 'equal))
 
 (defimplementation who-binds (name)
@@ -303,11 +271,14 @@
    :test 'equal))
 
 (defimplementation who-specializes (class)
-  (delete-duplicates
-   (mapcar (lambda (m) 
-             (car (find-definitions m)))
-           (ccl:specializer-direct-methods (if (symbolp class) (find-class class) class)))
-   :test 'equal))
+  (when (symbolp class)
+    (setq class (find-class class nil)))
+  (when class
+    (delete-duplicates
+     (mapcar (lambda (m) 
+               (car (find-definitions m)))
+             (ccl:specializer-direct-methods class))
+     :test 'equal)))
 
 (defimplementation list-callees (name)
   (remove-duplicates
@@ -347,31 +318,22 @@
 
 ;;; Debugging
 
-(defun openmcl-set-debug-switches ()
-  (setq ccl:*fasl-save-definitions* nil)
-  (setq ccl:*fasl-save-doc-strings* t)
-  (setq ccl:*fasl-save-local-symbols* t)
-  (setq ccl:*save-arglist-info* t)
-  (setq ccl:*save-definitions* nil)
-  (setq ccl:*save-doc-strings* t)
-  (setq ccl:*save-local-symbols* t)
-  (ccl:start-xref))
-
 (defimplementation call-with-debugging-environment (debugger-loop-fn)
   (let* (;;(*debugger-hook* nil)
          ;; don't let error while printing error take us down
          (ccl:*signal-printing-errors* nil))
     (funcall debugger-loop-fn)))
 
+;; This is called for an async interrupt and is running in a random
+;; thread not selected by the user, so don't use thread-local vars
+;; such as *emacs-connection*.
 (defun find-repl-thread ()
-  ;; This is called for an async interrupt and is running in a random thread not
-  ;; selected by the user, so don't use thread-local vars such as *emacs-connection*.
-  (let* ((conn (funcall (swank-sym default-connection))))
+  (let* ((*break-on-signals* nil)
+         (conn (funcall (swank-sym default-connection))))
     (and conn
-         (let ((*break-on-signals* nil))
-           (ignore-errors ;; this errors if no repl-thread
-             (funcall (swank-sym repl-thread) conn))))))
-  
+         (ignore-errors ;; this errors if no repl-thread
+           (funcall (swank-sym repl-thread) conn)))))
+
 (defimplementation call-with-debugger-hook (hook fun)
   (let ((*debugger-hook* hook)
         (ccl:*break-hook* hook)
@@ -393,34 +355,7 @@
     (ccl:map-call-frames function
                          :origin ccl:*top-error-frame*
                          :start-frame-number start-frame-number
-                         :count (- end-frame-number start-frame-number)
-                         :test (and (not t) ;(not (symbol-value (swank-sym *sldb-show-internal-frames*)))
-                                    'interesting-frame-p))))
-
-;; Exceptions
-(defvar *interesting-internal-frames* ())
-
-(defun interesting-frame-p (p context)
-  ;; A frame is interesting if it has at least one external symbol in its name.
-  (labels ((internal (obj)
-             ;; For a symbol, return true if the symbol is internal, i.e. not
-             ;; declared to be external.  For a cons or list, everything
-             ;; must be internal.  For a method, the name must be internal.
-             ;; Nothing else is internal.
-             (typecase obj
-               (cons (and (internal (car obj)) (internal (cdr obj))))
-               (symbol (and (eq (symbol-package obj) (find-package :ccl))
-                            (eq :internal (nth-value 1 (find-symbol (symbol-name obj) :ccl)))
-                            (not (member obj *interesting-internal-frames*))))
-               (method (internal (ccl:method-name obj)))
-               (t nil))))
-    (let* ((lfun (ccl:frame-function p context))
-           (internal-frame-p (internal (ccl:function-name lfun))))
-      #+debug (format t "~S is ~@[not ~]internal~%"
-                      (ccl:function-name lfun)
-                      (not internal-frame-p))
-      (not internal-frame-p))))
-
+                         :count (- end-frame-number start-frame-number))))
 
 (defimplementation compute-backtrace (start-frame-number end-frame-number)
   (let (result)
@@ -435,25 +370,31 @@
     (let ((lfun (ccl:frame-function p context)))
       (format stream "(~S" (or (ccl:function-name lfun) lfun))
       (let* ((unavailable (cons nil nil))
-            (args (ccl:frame-supplied-arguments p context :unknown-marker unavailable)))
+             (args (ccl:frame-supplied-arguments p context 
+                                                 :unknown-marker unavailable)))
         (declare (dynamic-extent unavailable))
         (if (eq args unavailable)
-          (format stream " #<Unknown Arguments>")
-          (loop for arg in args
-                do (if (eq arg unavailable)
-                     (format stream " #<Unavailable>")
-                     (format stream " ~s" arg)))))
+            (format stream " #<Unknown Arguments>")
+            (dolist (arg args)
+              (if (eq arg unavailable)
+                  (format stream " #<Unavailable>")
+                  (format stream " ~s" arg)))))
       (format stream ")"))))
+
+(defmacro with-frame ((p context) frame-number &body body)
+  `(call/frame ,frame-number (lambda (,p ,context) . ,body)))
 
 (defun call/frame (frame-number if-found)
   (map-backtrace  
    (lambda (p context)
-     (return-from call/frame 
+     (return-from call/frame
        (funcall if-found p context)))
    frame-number))
 
-(defmacro with-frame ((p context) frame-number &body body)
-  `(call/frame ,frame-number (lambda (,p ,context) . ,body)))
+(defimplementation frame-call (frame-number)
+  (with-frame (p context) frame-number
+    (with-output-to-string (stream)
+      (print-frame (list :frame p context) stream))))
 
 (defimplementation frame-var-value (frame var)
   (with-frame (p context) frame
@@ -470,6 +411,22 @@
       (if pc
         (pc-source-location lfun pc)
         (function-source-location lfun)))))
+
+(defun function-name-package (name)
+  (etypecase name
+    (null nil)
+    (symbol (symbol-package name))
+    ((cons (eql setf) symbol) (symbol-package (cadr name)))
+    ((cons (eql :internal)) (function-name-package (car (last name))))
+    ((cons (and symbol (not keyword)) (cons list null))
+     (symbol-package (car name)))
+    (standard-method (function-name-package (ccl:method-name name)))))
+
+(defimplementation frame-package (frame-number)
+  (with-frame (p context) frame-number
+    (let* ((lfun (ccl:frame-function p context))
+           (name (ccl:function-name lfun)))
+      (function-name-package name))))
 
 (defimplementation eval-in-frame (form index)
   (with-frame (p context) index
@@ -495,7 +452,6 @@
     (multiple-value-bind (lfun pc) (ccl:frame-function p context)
       (format t "LFUN: ~a~%PC: ~a  FP: #x~x  CONTEXT: ~a~%" lfun pc p context)
       (disassemble lfun))))
-
 
 ;; CCL commit r11373 | gz | 2008-11-16 16:35:28 +0100 (Sun, 16 Nov 2008)
 ;; contains some interesting details:
@@ -534,15 +490,11 @@
 ;; This can be retrieved by (CCL:FIND-SOURCE-NOTE-AT-PC function pc)
 ;; which returns a source-note for the source at offset pc in the
 ;; function.
-;; 
-;; Currently the only thing that makes use of any of this is the
-;; disassembler.  ILISP and current version of Slime still use
-;; backward-compatible functions that deal with filenames only.  The plan
-;; is to make Slime, and our IDE, use this eventually.
 
 (defun function-source-location (function)
   (source-note-to-source-location
-   (ccl:function-source-note function)
+   (or (ccl:function-source-note function)
+       (function-name-source-note function))
    (lambda ()
      (format nil "Function has no source note: ~A" function))
    (ccl:function-name function)))
@@ -550,17 +502,26 @@
 (defun pc-source-location (function pc)
   (source-note-to-source-location
    (or (ccl:find-source-note-at-pc function pc)
-       (ccl:function-source-note function))
+       (ccl:function-source-note function)
+       (function-name-source-note function))
    (lambda ()
      (format nil "No source note at PC: ~a[~d]" function pc))
    (ccl:function-name function)))
+
+(defun function-name-source-note (fun)
+  (let ((defs (ccl:find-definition-sources (ccl:function-name fun) 'function)))
+    (and defs
+         (destructuring-bind ((type . name) srcloc . srclocs) (car defs)
+           (declare (ignore type name srclocs))
+           srcloc))))
 
 (defun source-note-to-source-location (source if-nil-thunk &optional name)
   (labels ((filename-to-buffer (filename)
              (cond ((gethash filename *temp-file-map*)
                     (list :buffer (gethash filename *temp-file-map*)))
                    ((probe-file filename)
-                    (list :file (ccl:native-translated-namestring (truename filename))))
+                    (list :file (ccl:native-translated-namestring
+                                 (truename filename))))
                    (t (error "File ~s doesn't exist" filename)))))
     (handler-case
         (cond ((ccl:source-note-p source)
@@ -570,15 +531,17 @@
                  (make-location
                   (when file-name (filename-to-buffer (pathname file-name)))
                   (when start-pos (list :position (1+ start-pos)))
-                  (when full-text (list :snippet (subseq full-text  0 (min 40 (length full-text))))))))
+                  (when full-text 
+                    (list :snippet (subseq full-text 0 
+                                           (min 40 (length full-text))))))))
               ((and source name)
+               ;; This branch is probably never used
                (make-location
                 (filename-to-buffer source)
-                (list :function-name (let ((*package* (find-package :swank-io-package))) ;; should be buffer package.
-                                       (with-standard-io-syntax
-                                           (princ-to-string (if (functionp name)
-                                                              (ccl:function-name name)
-                                                              name)))))))
+                (list :function-name (princ-to-string 
+                                      (if (functionp name)
+                                          (ccl:function-name name)
+                                          name)))))
               (t `(:error ,(funcall if-nil-thunk))))
       (error (c) `(:error ,(princ-to-string c))))))
 
@@ -699,6 +662,26 @@
                                  "Underlying UVECTOR"))))
               (t value)))))
 
+(defmethod emacs-inspect ((f function))
+  (append
+   (label-value-line "Name" (function-name f))
+   `("Its argument list is: " 
+     ,(princ-to-string (arglist f)) (:newline))
+   (label-value-line "Documentation" (documentation  f t))
+   (when (function-lambda-expression f)
+     (label-value-line "Lambda Expression"
+                       (function-lambda-expression f)))
+   (when (ccl:function-source-note f)
+     (label-value-line "Source note"
+                       (ccl:function-source-note f)))
+   (when (typep f 'ccl:compiled-lexical-closure)
+     (append
+      (label-value-line "Inner function" (ccl::closure-function f))
+      '("Closed over values:" (:newline))
+      (loop for (name value) in (ccl::closure-closed-over-values f)
+            append (label-value-line (format nil " ~a" name)
+                                     value))))))
+
 (defclass uvector-inspector ()
   ((object :initarg :object)))
 
@@ -710,6 +693,10 @@
   (with-slots (object) uv
     (loop for i below (ccl:uvsize object) append 
           (label-value-line (princ-to-string i) (ccl:uvref object i)))))
+
+(defimplementation type-specifier-p (symbol)
+  (or (ccl:type-specifier-p symbol)
+      (not (eq (type-specifier-arglist symbol) :not-available))))
 
 ;;; Multiprocessing
 
@@ -725,9 +712,8 @@
   (queue '() :type list))
 
 (defimplementation spawn (fun &key name)
-  (ccl:process-run-function 
-   (or name "Anonymous (Swank)")
-   fun))
+  (ccl:process-run-function (or name "Anonymous (Swank)")
+                            fun))
 
 (defimplementation thread-id (thread)
   (ccl:process-serial-number thread))
@@ -758,7 +744,8 @@
   (ccl:all-processes))
 
 (defimplementation kill-thread (thread)
-  (ccl:process-kill thread))
+  ;;(ccl:process-kill thread) ; doesn't cut it
+  (ccl::process-initial-form-exited thread :kill))
 
 (defimplementation thread-alive-p (thread)
   (not (ccl:process-exhausted-p thread)))
@@ -800,6 +787,25 @@
      (when (eq timeout t) (return (values nil t)))
      (ccl:timed-wait-on-semaphore (mailbox.semaphore mbox) 1))))
 
+(let ((alist '())
+      (lock (ccl:make-lock "register-thread")))
+
+  (defimplementation register-thread (name thread)
+    (declare (type symbol name))
+    (ccl:with-lock-grabbed (lock)
+      (etypecase thread
+        (null 
+         (setf alist (delete name alist :key #'car)))
+        (ccl:process
+         (let ((probe (assoc name alist)))
+           (cond (probe (setf (cdr probe) thread))
+                 (t (setf alist (acons name thread alist))))))))
+    nil)
+
+  (defimplementation find-registered (name)
+    (ccl:with-lock-grabbed (lock)
+      (cdr (assoc name alist)))))
+
 (defimplementation set-default-initial-binding (var form)
   (eval `(ccl::def-standard-initial-binding ,var ,form)))
 
@@ -816,3 +822,5 @@
 
 (defimplementation hash-table-weakness (hashtable)
   (ccl:hash-table-weak-p hashtable))
+
+(pushnew 'deinit-log-output ccl:*save-exit-functions*)

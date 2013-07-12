@@ -65,28 +65,6 @@
   (:documentation
    "Dummy class created so that swank.lisp will compile and load."))
 
-;; #+#.(cl:if (cl:find-package "LINUX") '(and) '(or))
-;; (progn
-;;   (defmacro with-blocked-signals ((&rest signals) &body body)
-;;     (ext:with-gensyms ("SIGPROCMASK" ret mask)
-;;       `(multiple-value-bind (,ret ,mask)
-;;            (linux:sigprocmask-set-n-save
-;;             ,linux:SIG_BLOCK
-;;             ,(do ((sigset (linux:sigset-empty)
-;;                           (linux:sigset-add sigset (the fixnum (pop signals)))))
-;;                  ((null signals) sigset)))
-;;          (linux:check-res ,ret 'linux:sigprocmask-set-n-save)
-;;          (unwind-protect
-;;               (progn ,@body)
-;;            (linux:sigprocmask-set ,linux:SIG_SETMASK ,mask nil)))))
-
-;;   (defimplementation call-without-interrupts (fn)
-;;     (with-blocked-signals (#.linux:SIGINT) (funcall fn))))
-
-;; #+#.(cl:if (cl:find-package "LINUX") '(or) '(and))
-(defimplementation call-without-interrupts (fn)
-  (funcall fn))
-
 (let ((getpid (or (find-symbol "PROCESS-ID" :system)
                   ;; old name prior to 2005-03-01, clisp <= 2.33.2
                   (find-symbol "PROGRAM-ID" :system)
@@ -157,11 +135,24 @@
                        :name file 
                        :type type)))))
 
+;;;; UTF 
+
+(defimplementation string-to-utf8 (string)
+  (let ((enc (load-time-value 
+              (ext:make-encoding :charset "utf-8" :line-terminator :unix)
+              t)))
+    (ext:convert-string-to-bytes string enc)))
+
+(defimplementation utf8-to-string (octets)
+  (let ((enc (load-time-value 
+              (ext:make-encoding :charset "utf-8" :line-terminator :unix)
+              t)))
+    (ext:convert-string-from-bytes octets enc)))
+
 ;;;; TCP Server
 
-(defimplementation create-socket (host port)
-  (declare (ignore host))
-  (socket:socket-server port))
+(defimplementation create-socket (host port &key backlog)
+  (socket:socket-server port :interface host :backlog (or backlog 5)))
 
 (defimplementation local-port (socket)
   (socket:socket-server-port socket))
@@ -173,9 +164,11 @@
                                       &key external-format buffering timeout)
   (declare (ignore buffering timeout))
   (socket:socket-accept socket
-                        :buffered nil ;; XXX should be t
-                        :element-type 'character
-                        :external-format external-format))
+                        :buffered buffering ;; XXX may not work if t
+                        :element-type (if external-format 
+                                          'character
+                                          '(unsigned-byte 8))
+                        :external-format (or external-format :default)))
 
 #-win32
 (defimplementation wait-for-input (streams &optional timeout)
@@ -194,12 +187,47 @@
                                if x collect s)))
               (when ready (return ready))))))))
 
+#+win32
+(defimplementation wait-for-input (streams &optional timeout)
+  (assert (member timeout '(nil t)))
+  (loop
+   (cond ((check-slime-interrupts) (return :interrupt))
+         (t 
+          (let ((ready (remove-if-not #'input-available-p streams)))
+            (when ready (return ready)))
+          (when timeout (return nil))
+          (sleep 0.1)))))
+
+#+win32
+;; Some facts to remember (for the next time we need to debug this):
+;;  - interactive-sream-p returns t for socket-streams
+;;  - listen returns nil for socket-streams
+;;  - (type-of <socket-stream>) is 'stream
+;;  - (type-of *terminal-io*) is 'two-way-stream
+;;  - stream-element-type on our sockets is usually (UNSIGNED-BYTE 8)
+;;  - calling socket:socket-status on non sockets signals an error,
+;;    but seems to mess up something internally.
+;;  - calling read-char-no-hang on sockets does not signal an error,
+;;    but seems to mess up something internally.
+(defun input-available-p (stream)
+  (case (stream-element-type stream)
+    (character
+     (let ((c (read-char-no-hang stream nil nil)))
+       (cond ((not c)
+              nil)
+             (t
+              (unread-char c stream)
+              t))))
+    (t
+     (eq (socket:socket-status (cons stream :input) 0 0)
+         :input))))
+
 ;;;; Coding systems
 
 (defvar *external-format-to-coding-system*
   '(((:charset "iso-8859-1" :line-terminator :unix)
      "latin-1-unix" "iso-latin-1-unix" "iso-8859-1-unix")
-    ((:charset "iso-8859-1":latin-1)
+    ((:charset "iso-8859-1")
      "latin-1" "iso-latin-1" "iso-8859-1")
     ((:charset "utf-8") "utf-8")
     ((:charset "utf-8" :line-terminator :unix) "utf-8-unix")
@@ -280,6 +308,11 @@ Return NIL if the symbol is unbound."
     (:function (describe (symbol-function symbol)))
     (:class (describe (find-class symbol)))))
 
+(defimplementation type-specifier-p (symbol)
+  (or (ignore-errors
+       (subtypep nil symbol))
+      (not (eq (type-specifier-arglist symbol) :not-available))))
+
 (defun fspec-pathname (spec)
   (let ((path spec)
 	type
@@ -302,20 +335,24 @@ Return NIL if the symbol is unbound."
       (fspec-pathname fspec)
     (list (if type (list name type) name)
 	  (cond (file
-		 (multiple-value-bind (truename c) (ignore-errors (truename file))
+		 (multiple-value-bind (truename c) 
+                     (ignore-errors (truename file))
 		   (cond (truename
-			  (make-location (list :file (namestring truename))
-					 (if (consp lines)
-					     (list* :line lines)
-					     (list :function-name (string name)))
-                                         (when (consp type)
-                                           (list :snippet (format nil "~A" type)))))
+			  (make-location 
+                           (list :file (namestring truename))
+                           (if (consp lines)
+                               (list* :line lines)
+                               (list :function-name (string name)))
+                           (when (consp type)
+                             (list :snippet (format nil "~A" type)))))
 			 (t (list :error (princ-to-string c))))))
-		(t (list :error (format nil "No source information available for: ~S"
-					fspec)))))))
+		(t (list :error 
+                         (format nil "No source information available for: ~S"
+                                 fspec)))))))
 
 (defimplementation find-definitions (name)
-  (mapcar #'(lambda (e) (fspec-location name e)) (documentation name 'sys::file)))
+  (mapcar #'(lambda (e) (fspec-location name e)) 
+          (documentation name 'sys::file)))
 
 (defun trim-whitespace (string)
   (string-trim #(#\newline #\space #\tab) string))
@@ -595,10 +632,10 @@ Execute BODY with NAME's function slot set to FUNCTION."
            (list :error "No error location available")))))
 
 (defun signal-compiler-warning (cstring args severity orig-fn)
-  (signal (make-condition 'compiler-condition
-                          :severity severity
-                          :message (apply #'format nil cstring args)
-                          :location (compiler-note-location)))
+  (signal 'compiler-condition
+          :severity severity
+          :message (apply #'format nil cstring args)
+          :location (compiler-note-location))
   (apply orig-fn cstring args))
 
 (defun c-warn (cstring &rest args)
@@ -608,8 +645,15 @@ Execute BODY with NAME's function slot set to FUNCTION."
   (dynamic-flet ((sys::c-warn *orig-c-warn*))
     (signal-compiler-warning cstring args :style-warning *orig-c-style-warn*)))
 
-(defun c-error (cstring &rest args)
-  (signal-compiler-warning cstring args :error *orig-c-error*))
+(defun c-error (&rest args)
+  (signal 'compiler-condition
+          :severity :error
+          :message (apply #'format nil
+                          (if (= (length args) 3)
+                              (cdr args)
+                              args))
+          :location (compiler-note-location))
+  (apply *orig-c-error* args))
 
 (defimplementation call-with-compilation-hooks (function)
   (handler-bind ((warning #'handle-notification-condition))
@@ -620,14 +664,16 @@ Execute BODY with NAME's function slot set to FUNCTION."
 
 (defun handle-notification-condition (condition)
   "Handle a condition caused by a compiler warning."
-  (signal (make-condition 'compiler-condition
-                          :original-condition condition
-                          :severity :warning
-                          :message (princ-to-string condition)
-                          :location (compiler-note-location))))
+  (signal 'compiler-condition
+          :original-condition condition
+          :severity :warning
+          :message (princ-to-string condition)
+          :location (compiler-note-location)))
 
 (defimplementation swank-compile-file (input-file output-file
-                                       load-p external-format)
+                                       load-p external-format
+                                       &key policy)
+  (declare (ignore policy))
   (with-compilation-hooks ()
     (with-compilation-unit ()
       (multiple-value-bind (fasl-file warningsp failurep)
@@ -868,8 +914,3 @@ Execute BODY with NAME's function slot set to FUNCTION."
                 ,@(if restart-function 
                       `((:init-function ,restart-function))))))
     (apply #'ext:saveinitmem args)))
-
-;;; Local Variables:
-;;; eval: (put 'compile-file-frobbing-notes 'lisp-indent-function 1)
-;;; eval: (put 'dynamic-flet 'common-lisp-indent-function 1)
-;;; End:

@@ -100,7 +100,8 @@ If you copy the HyperSpec to another location, customize the variable
                           t stripped-symbol
                           'common-lisp-hyperspec-history)))))
   (maplist (lambda (entry)
-             (browse-url (concat common-lisp-hyperspec-root "Body/" (car entry)))
+             (browse-url (concat common-lisp-hyperspec-root "Body/"
+				 (car entry)))
              (if (cdr entry)
                  (sleep-for 1.5)))
            (let ((symbol (intern-soft 
@@ -139,21 +140,22 @@ If you copy the HyperSpec to another location, customize the variable
 ;;;
 ;;; 20020213 Edi Weitz
 
+(defun hyperspec--get-one-line ()
+  (prog1 
+      (delete* ?\n (thing-at-point 'line))
+    (forward-line)))
+
 (if common-lisp-hyperspec-symbol-table
-    (let ((index-buffer (find-file-noselect common-lisp-hyperspec-symbol-table)))
-      (labels ((get-one-line ()
-                 (prog1 
-                     (delete* ?\n (thing-at-point 'line))
-                   (forward-line))))
-        (save-excursion
-          (set-buffer index-buffer)
-          (goto-char (point-min))
-          (while (< (point) (point-max))
-            (let* ((symbol-name (downcase (get-one-line)))
-                   (relative-url (get-one-line)))
-              (intern-clhs-symbol symbol-name 
-                                  (subseq relative-url
-                                          (1+ (position ?\/ relative-url :from-end t)))))))))
+    (with-current-buffer (find-file-noselect 
+			  common-lisp-hyperspec-symbol-table)
+      (goto-char (point-min))
+      (while (< (point) (point-max))
+	(let* ((symbol-name (downcase (hyperspec--get-one-line)))
+	       (relative-url (hyperspec--get-one-line)))
+	  (intern-clhs-symbol symbol-name 
+			      (subseq relative-url
+				      (1+ (position ?\/ relative-url
+						    :from-end t)))))))
   (mapc (lambda (entry) (intern-clhs-symbol (car entry) (cadr entry)))
         '(("&allow-other-keys" "03_da.htm")
           ("&aux" "03_da.htm")
@@ -1247,8 +1249,9 @@ If you copy the HyperSpec to another location, customize the variable
  		nil nil 'common-lisp-hyperspec-format-history)))))
    (maplist (lambda (entry)
 	      (browse-url (common-lisp-hyperspec-section (car entry))))
-	    (let ((symbol (intern-soft character-name
-				       common-lisp-hyperspec-format-characters)))
+	    (let ((symbol (intern-soft 
+			   character-name
+			   common-lisp-hyperspec-format-characters)))
 	      (if (and symbol (boundp symbol))
 		  (symbol-value symbol)
 		  (error "The symbol `%s' is not defined in Common Lisp"
@@ -1257,58 +1260,64 @@ If you copy the HyperSpec to another location, customize the variable
 (eval-when (load eval)
   (defalias 'hyperspec-lookup-format 'common-lisp-hyperspec-format))
 
-(mapcar (lambda (entry)
-	  (let ((symbol (intern (car entry)
-				common-lisp-hyperspec-format-characters)))
-	    (if (boundp symbol)
-		(pushnew (cadr entry) (symbol-value symbol) :test 'equal)
-		(set symbol (cdr entry))))
-	  (when (and (= 1 (length (car entry)))
-		     (not (string-equal (car entry) (upcase (car entry)))))
-	    (let ((symbol (intern (upcase (car entry)) 
-				  common-lisp-hyperspec-format-characters)))
-	      (if (boundp symbol)
-		  (pushnew (cadr entry) (symbol-value symbol) :test 'equal)
-		  (set symbol (cdr entry))))))
-	'(("c" (22 3 1 1)) ("C: Character" (22 3 1 1))
-	  ("%" (22 3 1 2)) ("Percent: Newline" (22 3 1 2))
-	  ("&" (22 3 1 3)) ("Ampersand: Fresh-line" (22 3 1 3))
-	  ("|" (22 3 1 4)) ("Vertical-Bar: Page" (22 3 1 4))
-	  ("~" (22 3 1 5)) ("Tilde: Tilde" (22 3 1 5))
-	  ("r" (22 3 2 1)) ("R: Radix" (22 3 2 1))
-	  ("d" (22 3 2 2)) ("D: Decimal" (22 3 2-2))
-          ("b" (22 3 2 3)) ("B: Binary" (22 3 2 3))
-          ("o" (22 3 2 4)) ("O: Octal" (22 3 2 4))
-          ("x" (22 3 2 5)) ("X: Hexadecimal" (22 3 2 5))
-          ("f" (22 3 3 1)) ("F: Fixed-Format Floating-Point" (22 3 3 1))
-          ("e" (22 3 3 2)) ("E: Exponential Floating-Point" (22 3 3 2))
-          ("g" (22 3 3 3)) ("G: General Floating-Point" (22 3 3 3))
-          ("$" (22 3 3 4)) ("Dollarsign: Monetary Floating-Point" (22 3 3 4))
-          ("a" (22 3 4 1)) ("A: Aesthetic" (22 3 4 1))
-          ("s" (22 3 4 2)) ("S: Standard" (22 3 4 2))
-          ("w" (22 3 4 3)) ("W: Write" (22 3 4 3))
-          ("_" (22 3 5 1)) ("Underscore: Conditional Newline" (22 3 5 1))
-          ("<" (22 3 5 2)) ("Less-Than-Sign: Logical Block" (22 3 5 2))
-          ("i" (22 3 5 3)) ("I: Indent" (22 3 5 3))
-          ("/" (22 3 5 4)) ("Slash: Call Function" (22 3 5 4))
-          ("t" (22 3 6 1)) ("T: Tabulate" (22 3 6 1))
-          ("<" (22 3 6 2)) ("Less-Than-Sign: Justification" (22 3 6 2))
-          (">" (22 3 6 3)) ("Greater-Than-Sign: End of Justification" (22 3 6 3))
-          ("*" (22 3 7 1)) ("Asterisk: Go-To" (22 3 7 1))
-          ("[" (22 3 7 2)) ("Left-Bracket: Conditional Expression" (22 3 7 2))
-          ("]" (22 3 7 3)) ("Right-Bracket: End of Conditional Expression" (22 3 7 3))
-          ("{" (22 3 7 4)) ("Left-Brace: Iteration" (22 3 7 4))
-          ("}" (22 3 7 5)) ("Right-Brace: End of Iteration" (22 3 7 5))
-          ("?" (22 3 7 6)) ("Question-Mark: Recursive Processing" (22 3 7 6))
-          ("(" (22 3 8 1)) ("Left-Paren: Case Conversion" (22 3 8 1))
-          (")" (22 3 8 2)) ("Right-Paren: End of Case Conversion" (22 3 8 2))
-          ("p" (22 3 8 3)) ("P: Plural" (22 3 8-3))
-          (";" (22 3 9 1)) ("Semicolon: Clause Separator" (22 3 9 1))
-          ("^" (22 3 9 2)) ("Circumflex: Escape Upward" (22 3 9 2))
-          ("Newline: Ignored Newline" (22 3 9 3))
-          ("Nesting of FORMAT Operations" (22 3 10 1))
-          ("Missing and Additional FORMAT Arguments" (22 3 10 2))
-          ("Additional FORMAT Parameters" (22 3 10 3))))
+;;; Previously there were entries for "C" and "C: Character",
+;;; which unpleasingly crowded the completion buffer, so I made
+;;; it show one entry ("C - Character") only.
+;;;
+;;; 20100131 Tobias C Rittweiler
+
+(defun intern-clhs-format-directive (char section &optional summary)
+  (let* ((designator (if summary (format "%s - %s" char summary) char))
+         (symbol (intern designator common-lisp-hyperspec-format-characters)))
+    (if (boundp symbol)
+        (pushnew section (symbol-value symbol) :test 'equal)
+        (set symbol (list section)))))
+
+(mapc (lambda (entry)
+	(destructuring-bind (char section &optional summary) entry
+	  (intern-clhs-format-directive char section summary)
+	  (when (and (= 1 (length char))
+		     (not (string-equal char (upcase char))))
+	    (intern-clhs-format-directive (upcase char) section summary))))
+      '(("c" (22 3 1 1) "Character")
+	("%" (22 3 1 2) "Newline")
+	("&" (22 3 1 3) "Fresh-line")
+	("|" (22 3 1 4) "Page")
+	("~" (22 3 1 5) "Tilde")
+	("r" (22 3 2 1) "Radix")
+	("d" (22 3 2 2) "Decimal")
+	("b" (22 3 2 3) "Binary")
+	("o" (22 3 2 4) "Octal")
+	("x" (22 3 2 5) "Hexadecimal")
+	("f" (22 3 3 1) "Fixed-Format Floating-Point")
+	("e" (22 3 3 2) "Exponential Floating-Point")
+	("g" (22 3 3 3) "General Floating-Point")
+	("$" (22 3 3 4) "Monetary Floating-Point")
+	("a" (22 3 4 1) "Aesthetic")
+	("s" (22 3 4 2) "Standard")
+	("w" (22 3 4 3) "Write")
+	("_" (22 3 5 1) "Conditional Newline")
+	("<" (22 3 5 2) "Logical Block")
+	("i" (22 3 5 3) "Indent")
+	("/" (22 3 5 4) "Call Function")
+	("t" (22 3 6 1) "Tabulate")
+	("<" (22 3 6 2) "Justification")
+	(">" (22 3 6 3) "End of Justification")
+	("*" (22 3 7 1) "Go-To")
+	("[" (22 3 7 2) "Conditional Expression")
+	("]" (22 3 7 3) "End of Conditional Expression")
+	("{" (22 3 7 4) "Iteration")
+	("}" (22 3 7 5) "End of Iteration")
+	("?" (22 3 7 6) "Recursive Processing")
+	("(" (22 3 8 1) "Case Conversion")
+	(")" (22 3 8 2) "End of Case Conversion")
+	("p" (22 3 8 3) "Plural")
+	(";" (22 3 9 1) "Clause Separator")
+	("^" (22 3 9 2) "Escape Upward")
+	("Newline: Ignored Newline" (22 3 9 3))
+	("Nesting of FORMAT Operations" (22 3 10 1))
+	("Missing and Additional FORMAT Arguments" (22 3 10 2))
+	("Additional FORMAT Parameters" (22 3 10 3))))
 
 (defvar common-lisp-glossary-fun 'common-lisp-glossary-6.0)
 
@@ -1341,21 +1350,17 @@ cross-references table which is usually \"Map_IssX.txt\" or
 (defvar common-lisp-hyperspec-issuex-symbols (make-vector 67 0))
 
 (if common-lisp-hyperspec-issuex-table
-    (let ((index-buffer (find-file-noselect common-lisp-hyperspec-issuex-table)))
-      (labels ((get-one-line ()
-			     (prog1 
-				 (delete* ?\n (thing-at-point 'line))
-			       (forward-line))))
-        (save-excursion
-          (set-buffer index-buffer)
-          (goto-char (point-min))
-          (while (< (point) (point-max))
-            (let* ((symbol (intern (downcase (get-one-line))
-                                   common-lisp-hyperspec-issuex-symbols))
-                   (relative-url (get-one-line)))
-              (set symbol (subseq relative-url
-				  (1+ (position ?\/ relative-url :from-end t)))))))))
-  (mapcar 
+    (with-current-buffer (find-file-noselect
+			  common-lisp-hyperspec-issuex-table)
+      (goto-char (point-min))
+      (while (< (point) (point-max))
+	(let* ((symbol (intern (downcase (hyperspec--get-one-line))
+			       common-lisp-hyperspec-issuex-symbols))
+	       (relative-url (hyperspec--get-one-line)))
+	  (set symbol (subseq relative-url
+			      (1+ (position ?\/ relative-url 
+					    :from-end t)))))))
+  (mapc
    (lambda (entry)
      (let ((symbol (intern (car entry) common-lisp-hyperspec-issuex-symbols)))
        (set symbol (cadr entry))))
@@ -1460,7 +1465,8 @@ cross-references table which is usually \"Map_IssX.txt\" or
      ("defconstant-special:no" "iss099.htm")
      ("defgeneric-declare:allow-multiple" "iss100.htm")
      ("define-compiler-macro:x3j13-nov89" "iss101.htm")
-     ("define-condition-syntax:incompatibly-more-like-defclass+emphasize-read-only" "iss102.htm")
+     ("define-condition-syntax:\
+incompatibly-more-like-defclass+emphasize-read-only" "iss102.htm")
      ("define-method-combination-behavior:clarify" "iss103.htm")
      ("defining-macros-non-top-level:allow" "iss104.htm")
      ("defmacro-block-scope:excludes-bindings" "iss105.htm")
@@ -1631,7 +1637,8 @@ cross-references table which is usually \"Map_IssX.txt\" or
      ("pretty-print-interface" "iss270.htm")
      ("princ-readably:x3j13-dec-91" "iss271.htm")
      ("print-case-behavior:clarify" "iss272.htm")
-     ("print-case-print-escape-interaction:vertical-bar-rule-no-upcase" "iss273.htm") 
+     ("print-case-print-escape-interaction:vertical-bar-rule-no-upcase" 
+      "iss273.htm") 
      ("print-circle-shared:respect-print-circle" "iss274.htm")
      ("print-circle-structure:user-functions-work" "iss275.htm") 
      ("print-readably-behavior:clarify" "iss276.htm")
