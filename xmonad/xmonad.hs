@@ -1,3 +1,4 @@
+import System.IO
 import XMonad
 import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.ManageDocks
@@ -5,23 +6,35 @@ import XMonad.Layout.NoBorders
 import XMonad.Layout.Gaps
 import XMonad.Util.Run(spawnPipe)
 import XMonad.Util.EZConfig(additionalKeys)
-import System.IO
+
+myManageHook = composeAll
+  [ className =? "Emacs"         --> doShift "1:dev"
+  , className =? "Google-chrome" --> doShift "2:web"
+  , className =? "Firefox"       --> doShift "2:web"
+  , className =? "Thunderbird"   --> doShift "8:mail"
+  , title =? "alsamixer"         --> doShift "9:audio"
+  , title =? "ncmpcpp"           --> doShift "9:audio"
+  , className =? "Gimp"          --> doFloat
+  , manageDocks
+  ]
 
 main = do
   xmproc <- spawnPipe "xmobar"
   xmonad $ defaultConfig
-         { modMask = mod4Mask
+         { workspaces = ["1:dev","2:web","3:term","4","5","6","7","8:mail","9:audio"]
+         , modMask = mod4Mask
          , normalBorderColor = "#dddddd"
          , focusedBorderColor = "#339933"
-         , manageHook = manageDocks <+> manageHook defaultConfig
+         , manageHook = myManageHook <+> manageHook defaultConfig
          , layoutHook = avoidStruts $ layoutHook defaultConfig
---         , logHook = dynamicLogWithPP xmobarPP
---           { ppOutput = hPutStrLn xmproc
---           , ppTitle = xmobarColor "blue" "" . shorten 50
+         , logHook = dynamicLogWithPP xmobarPP
+           { ppOutput = hPutStrLn xmproc
+           , ppTitle = xmobarColor "blue" "" . shorten 50
 --           , ppLayout = const "" -- to disable the layout info on xmobar
---           }
+           }
+         , terminal = "/usr/bin/xterm"
          } `additionalKeys`
-         [ ((mod4Mask .|. shiftMask, xK_c), spawn "chromium")
+         [ ((mod4Mask .|. shiftMask, xK_c), spawn "google-chrome")
          , ((mod4Mask .|. shiftMask, xK_e), spawn "emacs")
          , ((mod4Mask .|. shiftMask, xK_l), spawn "xlock -mode blank")
          ]
