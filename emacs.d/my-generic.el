@@ -14,12 +14,12 @@
 ; Character encoding
 (setq default-buffer-file-coding-system 'utf-8)
 
-; Fix annoyances
+; General preferences
 (setq inhibit-startup-message t)
 (setq make-backup-files nil)
-(fset 'yes-or-no-p 'y-or-n-p)
-(setq transient-mark-mode nil)
 (setq use-dialog-box nil)
+(setq transient-mark-mode t)
+(fset 'yes-or-no-p 'y-or-n-p)
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
@@ -52,9 +52,6 @@
 
 ; Fonts
 (set-face-attribute 'default nil :height 100)
-; (set-default-font "DejaVu Sans Mono")
-; (global-set-key (kbd "S-<down-mouse-1>") 'mouse-appearance-menu)
-(global-set-key (kbd "S-<down-mouse-1>") 'mouse-set-font)
 
 ; Disabled commands
 (put 'upcase-region 'disabled nil)
