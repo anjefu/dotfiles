@@ -36,5 +36,5 @@ main = do
          } `additionalKeys`
          [ ((mod4Mask .|. shiftMask, xK_c), spawn "google-chrome")
          , ((mod4Mask .|. shiftMask, xK_e), spawn "emacs")
-         , ((mod4Mask .|. shiftMask, xK_l), spawn "xlock -mode blank")
+         , ((mod4Mask .|. shiftMask, xK_l), spawn "slimlock")
          ]
