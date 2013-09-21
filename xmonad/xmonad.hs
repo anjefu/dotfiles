@@ -34,7 +34,10 @@ main = do
            }
          , terminal = "/usr/bin/xterm"
          } `additionalKeys`
-         [ ((mod4Mask .|. shiftMask, xK_c), spawn "google-chrome")
-         , ((mod4Mask .|. shiftMask, xK_e), spawn "emacs")
+         [ ((mod4Mask .|. shiftMask, xK_i), spawn "google-chrome")
+         , ((mod4Mask .|. shiftMask, xK_t), spawn "emacs")
          , ((mod4Mask .|. shiftMask, xK_l), spawn "slimlock")
+         , ((mod4Mask .|. shiftMask, xK_n), spawn "pcmanfm")
+         , ((mod4Mask .|. shiftMask, xK_r), spawn "reboot")
+         , ((mod4Mask .|. shiftMask, xK_p), spawn "poweroff")
          ]
