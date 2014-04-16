@@ -1,3 +1,5 @@
+# -*- shell-script -*-
+
 path_remove()  { export PATH=`echo -n $PATH | awk -v RS=: -v ORS=: '$0 != "'$1'"' | sed 's/:$//'`; }
 
 if [[ :$PATH: == *:.:* ]]; then
@@ -14,10 +16,14 @@ export PS1="\w \$ "
 
 if [ "`uname -s`" == "Darwin" ]; then
    # OS X
-   export PATH="/usr/local/texlive/2012/bin/x86_64-darwin:${PATH}"
+   export PATH="/usr/local/texlive/2013/bin/x86_64-darwin:${PATH}"
    export PKG_CONFIG_PATH="/Library/Frameworks/Mono.framework/Versions/Current/lib/pkgconfig:${PKG_CONFIG_PATH}"
    export JAVA_HOME="/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home"
-   export EDITOR="/usr/local/Cellar/emacs/24.1/bin/emacsclient --alternate-editor emacs"
+   export EDITOR="/usr/local/Cellar/emacs/24.3/bin/emacsclient --alternate-editor emacs"
+
+   export CLICOLOR=1
+   # export LSCOLORS=ExFxCxDxBxegedabagacad # light background
+   export LSCOLORS=gxBxhxDxfxhxhxhxhxcxcx # dark background
 else
    # Linux
    export PATH="/usr/share/java/apache-ant/bin:${PATH}"
