@@ -1,1 +1,35 @@
-xmodmap ~/.xmodmap
+# Configure X
+xsetroot -solid '#333'
+xsetroot -cursor_name left_ptr
+xrdb -merge ~/.Xresources
+
+~/projects/scripts/init-keyboard.sh
+~/projects/scripts/setup-background.sh
+
+# Set up SCIM input method
+export XMODIFIERS=@im=SCIM
+export GTK_IM_MODULE="scim"
+export QT_IM_MODULE="scim"
+scim -d
+
+# Set up CUPS
+export CUPS_SERVER=localhost
+
+# System tray
+~/projects/scripts/setup-tray.sh
+
+# Network manager applet
+nm-applet --sm-disable &
+
+# Music player daemon
+mpd ~/.mpdconf
+
+# Applications
+emacs &
+firefox &
+xterm -e ncmpcpp -s playlist-editor &
+thunderbird &
+
+# Screen saver / screen locking
+light-locker &
+# xss-lock -- light-locker-command -l &
