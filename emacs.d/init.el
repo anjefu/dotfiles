@@ -29,6 +29,7 @@
 (require 'my-windows)
 (require 'my-markdown)
 (require 'my-proofgeneral)
+(require 'my-scala)
 
 (if (file-exists-p "~/.emacs.d/my-wanderlust.el")
     (require 'my-wanderlust))

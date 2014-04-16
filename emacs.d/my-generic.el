@@ -39,6 +39,8 @@
 (setq c-default-style '((java-mode . "java")
                         (awk-mode . "awk")
                         (other . "k&r")))
+(setq-default c-basic-offset 4)
+(setq-default tab-width 4)
 
 ; Whitespace
 (setq-default show-trailing-whitespace t)
@@ -48,10 +50,10 @@
 (blink-cursor-mode 0)
 
 ; Alerts
-(setq visible-bell nil)
+(setq visible-bell t)
 
 ; Fonts
-(set-face-attribute 'default nil :height 100)
+; (set-face-attribute 'default nil :height 100)
 
 ; Disabled commands
 (put 'upcase-region 'disabled nil)

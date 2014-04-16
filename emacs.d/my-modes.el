@@ -1,6 +1,3 @@
-(setq-default c-basic-offset 4
-              tab-width 4)
-
 (defun my-c-mode-common-hook ()
   (c-set-offset 'substatement-open 0)
   (c-set-offset 'statement-cont 4)
@@ -19,10 +16,6 @@
   (turn-on-font-lock)
   (define-key csharp-mode-map "\t" 'c-tab-indent-or-complete))
 (add-hook 'csharp-mode-hook 'my-csharp-mode-hook)
-
-(add-hook 'latex-mode-hook
-          (lambda()
-            (auto-fill-mode 1)))
 
 (add-hook 'c-mode-common-hook 'hs-minor-mode)
 (add-hook 'python-mode-hook 'hs-minor-mode)
