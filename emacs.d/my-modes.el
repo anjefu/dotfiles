@@ -30,4 +30,7 @@
 (add-to-list 'auto-mode-alist '("\\.i$" . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))
 
+(add-to-list 'load-path (expand-file-name "~/third-party/llvm/utils/emacs"))
+(require 'llvm-mode)
+
 (provide 'my-modes)
