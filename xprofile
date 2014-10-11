@@ -8,12 +8,12 @@ xrdb -merge ~/.Xresources
 
 # Set up SCIM input method
 export XMODIFIERS=@im=SCIM
-export GTK_IM_MODULE="scim"
+# export GTK_IM_MODULE="scim"  # (breaks pinentry-gtk)
 export QT_IM_MODULE="scim"
 scim -d
 
-# Set up CUPS
-export CUPS_SERVER=localhost
+# Set up CUPS (for printing to USB printers)
+# export CUPS_SERVER=localhost
 
 # System tray
 ~/projects/scripts/setup-tray.sh
@@ -28,8 +28,6 @@ mpd ~/.mpdconf
 emacs &
 firefox &
 xterm -e ncmpcpp -s playlist-editor &
-thunderbird &
 
 # Screen saver / screen locking
 light-locker &
-# xss-lock -- light-locker-command -l &
