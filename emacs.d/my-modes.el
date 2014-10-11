@@ -33,4 +33,8 @@
 (add-to-list 'load-path (expand-file-name "~/third-party/llvm/utils/emacs"))
 (require 'llvm-mode)
 
+;; haskell-mode
+(add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
+(setq haskell-process-type 'cabal-repl)
+
 (provide 'my-modes)
