@@ -50,14 +50,9 @@
 (blink-cursor-mode 0)
 
 ; Alerts
-(setq visible-bell t)
-
-; Fonts
-; (set-face-attribute 'default nil :height 100)
+(setq visible-bell nil)
 
 ; Disabled commands
-(put 'upcase-region 'disabled nil)
-(put 'downcase-region 'disabled nil)
 (put 'narrow-to-region 'disabled nil)
 
 (provide 'my-generic)
