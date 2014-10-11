@@ -1,5 +1,15 @@
 *metaSendsEscape: true
 
+URxvt*foreground: gray
+URxvt*background: black
+! Needs a compositor
+! URxvt*depth: 32
+! URxvt*background: rgba:0000/0000/0000/dddd
+URxvt*transparent: true
+URxvt*shading: 20
+URxvt*scrollBar: false
+URxvt.font: 9x15
+
 XTerm*Background: black
 XTerm*Foreground: gray
 XTerm*initialFont: 5
