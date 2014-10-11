@@ -1,10 +1,11 @@
-emacs.d/auto-save-list
+emacs.d/auto-save-list/
 emacs.d/bookmarks
-emacs.d/el-get
-emacs.d/elpa
+emacs.d/el-get/
+emacs.d/elpa/
 emacs.d/my-wanderlust.el
 emacs.d/tramp
-emacs.d/url
+emacs.d/url/
+mpd/
 xmonad/xmonad.errors
 xmonad/xmonad.hi
 xmonad/xmonad.o
