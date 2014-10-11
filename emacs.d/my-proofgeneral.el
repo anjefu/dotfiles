@@ -5,4 +5,6 @@
     (if (file-exists-p proofgeneral-2)
         (load-file proofgeneral-2))))
 
+(setq proof-splash-enable nil)
+
 (provide 'my-proofgeneral)
