@@ -5,7 +5,7 @@
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 (defun inbox ()
   (interactive)
-  (find-file "~/projects/org/gtd.org"))
+  (find-file "~/projects/org/main.org"))
 (define-key global-map "\C-ca" 'org-agenda)
 (setq org-todo-keywords '("TODO" "STARTED" "WAITING" "DONE"))
 (setq org-agenda-files (file-expand-wildcards "~/projects/org/*.org"))
