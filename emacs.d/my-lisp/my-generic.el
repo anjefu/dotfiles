@@ -46,8 +46,8 @@
 (setq-default show-trailing-whitespace t)
 
 ; Cursor
-(setq-default cursor-type 'box)
-(blink-cursor-mode 0)
+(setq-default cursor-type 'bar)
+(blink-cursor-mode t)
 
 ; Alerts
 (setq visible-bell nil)
