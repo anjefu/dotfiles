@@ -30,8 +30,10 @@
 (add-to-list 'auto-mode-alist '("\\.i$" . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))
 
-(add-to-list 'load-path (expand-file-name "~/third-party/llvm/utils/emacs"))
-(require 'llvm-mode)
+(if (file-exists-p (expand-file-name "~/third-party/llvm/utils/emacs/llvm-mode.el"))
+    (progn
+      (add-to-list 'load-path (expand-file-name "~/third-party/llvm/utils/emacs"))
+      (require 'llvm-mode)))
 
 ;; haskell-mode
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
