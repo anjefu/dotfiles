@@ -20,8 +20,4 @@
 ; file is read _after_ the initial frame is created.
 (add-hook 'after-make-frame-functions 'toggle-fullscreen)
 
-(if (fboundp 'ns-toggle-fullscreen)
-    (ns-toggle-fullscreen)
-  (toggle-fullscreen))
-
 (provide 'my-fullscreen)
