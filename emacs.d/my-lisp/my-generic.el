@@ -24,6 +24,12 @@
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
 (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
 
+; Scrolling
+(setq scroll-step 1)
+(setq mouse-wheel-scroll-amount '(1 ((shift) . 1)))
+(setq mouse-wheel-progressive-speed 't)
+(setq mouse-wheel-follow-mouse 't)
+
 ; Mode line
 (line-number-mode t)
 (column-number-mode t)
