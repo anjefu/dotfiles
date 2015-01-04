@@ -8,7 +8,7 @@
   (find-file "~/projects/org/todo.org"))
 (define-key global-map "\C-ca" 'org-agenda)
 (setq org-todo-keywords '("TODO(t)" "STARTED(s)" "WAITING(w)" "DONE(d)"))
-(setq org-agenda-files '("~/projects/org/todo.org" "~/projects/org/todo.org_archive"))
+(setq org-agenda-files '("~/projects/org/todo.org"))
 ; (setq org-agenda-include-diary t)
 (setq org-agenda-include-all-todo t)
 (setq org-agenda-start-on-weekday nil)
