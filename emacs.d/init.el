@@ -12,7 +12,6 @@
 (require 'my-clisp)
 (require 'my-svn)
 (require 'my-shells)
-(require 'my-remember)
 (require 'my-org)
 (require 'my-erc)
 ; (require 'my-cedet)
