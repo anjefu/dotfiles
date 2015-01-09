@@ -16,3 +16,11 @@ XTerm*initialFont: 5
 XTerm*saveLines: 1000
 XTerm*HiForeColor: white
 XTerm*HiBackColor: #c06077
+
+Xft.dpi: 96
+Xft.lcdfilter: lcddefault
+Xft.antialias: true
+Xft.autohint: true
+Xft.hinting: true
+Xft.hintstyle: hintslight
+Xft.rgba: rgb
