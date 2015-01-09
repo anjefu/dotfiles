@@ -8,7 +8,7 @@ URxvt*background: black
 URxvt*transparent: true
 URxvt*shading: 20
 URxvt*scrollBar: false
-URxvt.font: 9x15
+URxvt.font: xft:DejaVuSansMono
 
 XTerm*Background: black
 XTerm*Foreground: gray
