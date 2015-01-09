@@ -10,6 +10,7 @@
         (package-refresh-contents))
 
       (defvar my-packages '(haskell-mode
+                            magit
                             scala-mode
                             sml-mode)
         "A list of packages to ensure are installed at launch.")
