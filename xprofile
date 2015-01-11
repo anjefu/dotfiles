@@ -27,7 +27,7 @@ mpd ~/.mpdconf
 # Applications
 emacs &
 firefox &
-xterm -e ncmpcpp -s playlist-editor &
+urxvt -e ncmpcpp -s playlist-editor &
 
 # Screen saver / screen locking
 light-locker &
