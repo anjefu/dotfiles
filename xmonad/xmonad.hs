@@ -17,6 +17,8 @@ myManageHook = composeAll
   , manageDocks
   ]
 
+myTerminal = "urxvt"
+
 myKeys = [ ((mod4Mask .|. shiftMask, xK_f), spawn "firefox")
          , ((mod4Mask .|. shiftMask, xK_t), spawn "emacs")
          , ((mod4Mask .|. shiftMask, xK_l), spawn "light-locker-command --lock")
@@ -27,7 +29,8 @@ myKeys = [ ((mod4Mask .|. shiftMask, xK_f), spawn "firefox")
          , ((0, xF86XK_AudioMute)         , spawn "amixer -q set Master toggle")
          , ((0, xF86XK_AudioRaiseVolume)  , spawn "amixer -q set Master on; amixer -q set Master 5+")
 --       , ((0, xF86XK_AudioMicMute)      , spawn "amixer -q set Mic toggle")
---       , ((0, xF86XK_Launch1)           , spawn "")
+         , ((0, xF86XK_Launch1)           , spawn (myTerminal ++ " -e top"))
+         , ((0, xF86XK_Display)           , spawn "xrandr --auto")
          , ((0, xF86XK_MonBrightnessUp)   , spawn "xbacklight -inc 10")
          , ((0, xF86XK_MonBrightnessDown) , spawn "xbacklight -dec 10")
          , ((0, xF86XK_AudioPlay)         , spawn "ncmpcpp toggle")
@@ -56,7 +59,7 @@ main = do
          , focusedBorderColor = "#113311"
          , manageHook         = myManageHook <+> manageHook defaultConfig
          , layoutHook         = avoidStruts $ smartBorders $ myLayouts
-         , terminal           = "urxvt"
+         , terminal           = myTerminal
          , logHook            = dynamicLogWithPP xmobarPP
            { ppOutput = hPutStrLn xmproc
            , ppTitle = xmobarColor "blue" "" . shorten 50
