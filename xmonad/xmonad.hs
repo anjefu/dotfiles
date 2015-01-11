@@ -55,8 +55,8 @@ main = do
   xmonad $ defaultConfig
          { workspaces         = map show [1..9]
          , modMask            = mod4Mask
-         , normalBorderColor  = "#dddddd"
-         , focusedBorderColor = "#113311"
+         , normalBorderColor  = "#555555"
+         , focusedBorderColor = "#335533"
          , manageHook         = myManageHook <+> manageHook defaultConfig
          , layoutHook         = avoidStruts $ smartBorders $ myLayouts
          , terminal           = myTerminal
