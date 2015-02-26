@@ -54,6 +54,7 @@
 ; Cursor
 (setq-default cursor-type 'bar)
 (blink-cursor-mode t)
+(setq blink-cursor-blinks 0)
 
 ; Alerts
 (setq visible-bell nil)
