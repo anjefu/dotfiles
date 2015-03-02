@@ -1,5 +1,4 @@
 (require 'org)
-(require 'org-timetracker)
 
 (setq org-hide-leading-stars t)
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
@@ -14,8 +13,8 @@
 (setq org-agenda-start-on-weekday nil)
 (setq org-directory "~/projects/org")
 
-(add-to-list 'load-path "~/.emacs.d/lisp/remember-2.0")
-(require 'remember-autoloads)
+(require 'remember)
+; (org-remember-insinuate)
 (setq org-directory "~/projects/org/")
 (setq org-default-notes-file (concat org-directory "todo.org"))
 (setq org-remember-templates
@@ -23,6 +22,6 @@
 (setq remember-annotation-functions '(org-remember-annotation))
 (setq remember-handler-functions '(org-remember-handler))
 (add-hook 'remember-mode-hook 'org-remember-apply-template)
-(define-key global-map "\C-cr" 'org-remember)
+(define-key global-map "\C-cr" 'remember)
 
 (provide 'my-org)

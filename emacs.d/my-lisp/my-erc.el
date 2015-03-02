@@ -7,11 +7,6 @@
 
         (erc-services-mode 1)
 
-        (and
-         (require 'erc-highlight-nicknames)
-         (add-to-list 'erc-modules 'highlight-nicknames)
-         (erc-update-modules))
-
         (setq erc-prompt-for-nickserv-password nil)
 
         (setq erc-nickserv-passwords

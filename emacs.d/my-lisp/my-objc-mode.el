@@ -1,5 +1,6 @@
 (setq auto-mode-alist
       (cons '("\\.mm$" . objc-mode) auto-mode-alist))
+
 (defun bh-choose-header-mode ()
   (interactive)
   (if (string-equal (substring (buffer-file-name) -2) ".h")
@@ -13,7 +14,9 @@
                 (objc-mode))
             (if (file-exists-p dot-cpp-file)
                 (c++-mode)))))))
+
 (add-hook 'find-file-hook 'bh-choose-header-mode)
+
 (defun bh-compile ()
   (interactive)
   (let ((df (directory-files "."))

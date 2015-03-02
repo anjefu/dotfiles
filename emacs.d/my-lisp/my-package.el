@@ -9,9 +9,14 @@
       (when (not package-archive-contents)
         (package-refresh-contents))
 
-      (defvar my-packages '(haskell-mode
+      (defvar my-packages '(cmake-mode
+                            csharp-mode
+                            erc-hl-nicks
+                            haskell-mode
                             magit
+                            markdown-mode
                             scala-mode
+                            slime
                             sml-mode)
         "A list of packages to ensure are installed at launch.")
 

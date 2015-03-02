@@ -20,15 +20,17 @@
 (add-hook 'c-mode-common-hook 'hs-minor-mode)
 (add-hook 'python-mode-hook 'hs-minor-mode)
 
-(autoload 'csharp-mode "csharp-mode-0.7.0" "Major mode for editing C# code." t)
-(autoload 'ledger-mode "ledger" "Ledger mode." t)
+(autoload 'cmake-mode "cmake-mode.el" t)
+(autoload 'csharp-mode "csharp-mode" "Major mode for editing C# code." t)
 
+(add-to-list 'auto-mode-alist '("CMakeLists\\.txt\\'" . cmake-mode))
 (add-to-list 'auto-mode-alist '("\\.cl$" . lisp-mode))
+(add-to-list 'auto-mode-alist '("\\.cmake\\'" . cmake-mode))
 (add-to-list 'auto-mode-alist '("\\.cu$" . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.cs$" . csharp-mode))
 (add-to-list 'auto-mode-alist '("\\.command$" . sh-mode))
 (add-to-list 'auto-mode-alist '("\\.i$" . c++-mode))
-(add-to-list 'auto-mode-alist '("\\.ledger$" . ledger-mode))
+(add-to-list 'auto-mode-alist '("\\.i$" . c++-mode))
 
 (if (file-exists-p (expand-file-name "~/third-party/llvm/utils/emacs/llvm-mode.el"))
     (progn
