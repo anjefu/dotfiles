@@ -20,7 +20,9 @@ myManageHook = composeAll
 
 myTerminal = "urxvt"
 
-myKeys = [ ((mod4Mask .|. shiftMask, xK_f), spawn "firefox")
+myKeys = [ ((mod4Mask .|. shiftMask, xK_f), spawn "~/projects/scripts/scim-open-app.sh firefox")
+         , ((mod4Mask .|. shiftMask, xK_c), spawn "~/projects/scripts/scim-open-app.sh google-chrome-stable")
+         , ((mod4Mask .|. shiftMask, xK_m), spawn "~/projects/scripts/scim-open-app.sh thunderbird")
          , ((mod4Mask .|. shiftMask, xK_t), spawn "emacs")
          , ((mod4Mask .|. shiftMask, xK_l), spawn "light-locker-command --lock")
          , ((mod4Mask .|. shiftMask, xK_n), spawn "pcmanfm")
