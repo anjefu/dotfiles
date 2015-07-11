@@ -22,12 +22,7 @@ scim -d
 nm-applet --sm-disable &
 
 # Music player daemon
-mpd ~/.mpdconf
-
-# Applications
-emacs &
-firefox &
-urxvt -e ncmpcpp -s playlist-editor &
+#mpd ~/.mpdconf
 
 # Screen saver / screen locking
 light-locker &
