@@ -1,6 +1,7 @@
 emacs.d/auto-save-list/
 emacs.d/bookmarks
 emacs.d/elpa/
+emacs.d/eshell/history
 emacs.d/ido.last
 emacs.d/my-wanderlust.el
 emacs.d/tramp
