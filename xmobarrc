@@ -1,7 +1,8 @@
 Config { font = "-misc-fixed-*-*-*-*-12-*-*-*-*-*-*-*"
        , bgColor = "black"
        , fgColor = "grey"
-       , position = TopW L 85
+       , alpha = 196
+       , position = TopW L 93
        , lowerOnStart = True
        , commands = [ Run Network "eth0" ["-L","0","-H","32","--normal","green","--high","red"] 10
                     , Run Network "wlan0" ["-L","0","-H","32","--normal","green","--high","red"] 10
