@@ -28,6 +28,7 @@ else
    # Linux
    export PATH="/usr/share/java/apache-ant/bin:${PATH}"
    export PATH="/opt/android-sdk/tools:${PATH}"
+   export PATH="${HOME}/.cabal/bin:${PATH}"
    export EDITOR="/usr/bin/emacsclient --alternate-editor emacs"
    export GPG_TTY=$(tty)
    alias ls="ls --color=auto"
