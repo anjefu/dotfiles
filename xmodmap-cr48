@@ -1,5 +1,0 @@
-! Map Super_L (search key on Cr-48) to control
-remove mod4 = Super_L
-keycode 133 = Control_L
-add control = Control_L
-add mod4 = Super_L
