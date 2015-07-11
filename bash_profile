@@ -32,6 +32,8 @@ else
    export EDITOR="/usr/bin/emacsclient --alternate-editor emacs"
    export GPG_TTY=$(tty)
    alias ls="ls --color=auto"
+
+   . ${HOME}/.opam/opam-init/init.sh > /dev/null 2> /dev/null || true
 fi
 
 # CUDA settings
