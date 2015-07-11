@@ -6,6 +6,7 @@ import XMonad.Layout.Grid
 import XMonad.Layout.NoBorders
 import XMonad.Layout.Spacing
 import XMonad.Layout.ThreeColumns
+import XMonad.Layout.MultiColumns
 import XMonad.Util.Run (spawnPipe)
 import XMonad.Util.EZConfig (additionalKeys)
 import Graphics.X11.ExtraTypes.XF86
@@ -37,15 +38,18 @@ myKeys = [ ((mod4Mask .|. shiftMask, xK_f), spawn "firefox")
          , ((0, xF86XK_AudioPrev)         , spawn "ncmpcpp prev")
          , ((0, xF86XK_AudioNext)         , spawn "ncmpcpp next")
          , ((0, xK_Print)                 , spawn "scrot")
+--         , ((mod4Mask .|. shiftMask , xK_Print) , spawn "scrot -s")
          , ((0, xF86XK_ScreenSaver)       , spawn "xcreensaver-command --lock")
          ]
 
-myLayouts =   (smartSpacing 10 $ Tall nmaster delta ratio)
-          ||| (smartSpacing 10 $ Mirror (Tall nmaster delta ratio))
-          ||| (smartSpacing 10 $ Full)
-          ||| (smartSpacing 10 $ ThreeColMid nmaster delta ratio)
-          ||| (smartSpacing 10 $ Grid)
+myLayouts =   (smartSpacing s $ Tall nmaster delta ratio)
+          ||| (smartSpacing s . Mirror $ Tall nmaster delta ratio)
+          ||| (smartSpacing s $ Full)
+          ||| (smartSpacing s $ ThreeColMid nmaster delta ratio)
+          ||| (smartSpacing s $ multiCol [1] nmaster delta (-0.5))
+          ||| (smartSpacing s $ Grid)
   where
+    s       = 5
     nmaster = 1
     ratio   = 1/2
     delta   = 3/100
@@ -58,7 +62,7 @@ main = do
          , normalBorderColor  = "#555555"
          , focusedBorderColor = "#335533"
          , manageHook         = myManageHook <+> manageHook defaultConfig
-         , layoutHook         = avoidStruts $ smartBorders $ myLayouts
+         , layoutHook         = avoidStruts . smartBorders $ myLayouts
          , terminal           = myTerminal
          , logHook            = dynamicLogWithPP xmobarPP
            { ppOutput = hPutStrLn xmproc
