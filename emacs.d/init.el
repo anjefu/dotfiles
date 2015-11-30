@@ -52,7 +52,8 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
-(if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+; (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+(set-frame-parameter (selected-frame) 'alpha 95)
 
 ; Set PATH
 (setenv "PATH" (concat
@@ -98,7 +99,7 @@
 (setq blink-cursor-blinks 0)
 
 ; Alerts
-(setq visible-bell t)
+(setq visible-bell nil)
 
 ; Screen splitting
 ; from https://www.reddit.com/r/emacs/comments/25v0eo/you_emacs_tips_and_tricks/chldury
@@ -110,12 +111,13 @@
 
 (defun hsplit-last-buffer ()
   (interactive)
-   (split-window-horizontally)
+  (split-window-horizontally)
   (other-window 1 nil)
   (switch-to-next-buffer))
 
 ; Fonts
-(set-face-attribute 'default nil :height 80)
+(set-face-attribute 'default nil :height 140)
+(set-frame-font "Inconsolata" nil t)
 
 (global-set-key (kbd "C-x 2") 'vsplit-last-buffer)
 (global-set-key (kbd "C-x 3") 'hsplit-last-buffer)
@@ -197,11 +199,6 @@
                            (progn (setq old-fullscreen current-value)
                                   'fullboth)))))
 
-; Make new frames fullscreen by default. Note: this hook doesn't do
-; anything to the initial frame if it's in your .emacs, since that
-; file is read _after_ the initial frame is created.
-(add-hook 'after-make-frame-functions 'toggle-fullscreen)
-
 ;; ido config
 
 (setq ido-enable-flex-matching t)
@@ -227,13 +224,6 @@
 
 ; (define-key latex-mode-map "\C-cw" 'latex-word-count)
 
-;; markdown config
-
-(autoload 'markdown-mode "markdown-mode.el" "Major mode for editing Markdown files" t)
-
-(add-to-list 'auto-mode-alist '("\\.md$" . markdown-mode))
-(add-to-list 'auto-mode-alist '("\\.text$" . markdown-mode))
-
 ;; modes config
 
 (defun my-c-mode-common-hook ()
@@ -252,7 +242,9 @@
 
 (defun my-csharp-mode-hook ()
   (turn-on-font-lock)
-  (define-key csharp-mode-map "\t" 'c-tab-indent-or-complete))
+;  (define-key csharp-mode-map "\t" 'c-tab-indent-or-complete)
+  )
+
 (add-hook 'csharp-mode-hook 'my-csharp-mode-hook)
 
 (add-hook 'c-mode-common-hook 'hs-minor-mode)
@@ -260,6 +252,7 @@
 
 (autoload 'cmake-mode "cmake-mode.el" t)
 (autoload 'csharp-mode "csharp-mode" "Major mode for editing C# code." t)
+(autoload 'markdown-mode "markdown-mode.el" "Major mode for editing Markdown files" t)
 
 (load-file (let ((coding-system-for-read 'utf-8))
               (shell-command-to-string "agda-mode locate")))
@@ -272,6 +265,7 @@
 (add-to-list 'auto-mode-alist '("\\.command$" . sh-mode))
 (add-to-list 'auto-mode-alist '("\\.i$" . c++-mode))
 (add-to-list 'auto-mode-alist '("\\.i$" . c++-mode))
+(add-to-list 'auto-mode-alist '("\\.md$" . markdown-mode))
 
 (if (file-exists-p (expand-file-name "~/third-party/llvm/utils/emacs/llvm-mode.el"))
     (progn
@@ -367,12 +361,6 @@
   (let ((default-directory dir))
     (shell name)))
 
-(defun make-shells ()
-  (interactive)
-  (shell-dir "x" "~/projects/")
-  (shell-dir "y" "~/projects/")
-  (shell-dir "z" "~/projects/"))
-
 (global-set-key "\C-cs" 'shell)
 
 (shell-dir "*shell*" "~/projects/")
@@ -381,8 +369,8 @@
 
 (defun my-text-mode-hook ()
   (function (lambda ()
-	      (text-mode-hook-identify)
-	      (turn-on-auto-fill))))
+              (text-mode-hook-identify)
+              (turn-on-auto-fill))))
 (add-hook 'text-mode-hook 'my-text-mode-hook)
 (setq default-major-mode 'text-mode)
 
@@ -415,14 +403,14 @@
 (autoload 'w3m "w3m" "Interface for w3m on Emacs." t)
 
 (setq w3m-use-cookies t)
-(setq w3m-cookie-accept-domains '("google.com"))
+(setq w3m-cookie-accept-domains nil)
 (setq w3m-display-inline-images nil)
 (setq w3m-default-display-inline-images t)
-(setq w3m-home-page "http://www.google.com/intl/en/")
+(setq w3m-home-page "http://www.duckduckgo.com/")
 
-(defun google (term)
+(defun websearch (term)
   (interactive "sSearch term: ")
-  (w3m-goto-url (concat "http://google.com/search?q=" term)))
+  (w3m-goto-url (concat "http://duckduckgo.com/?q=" term)))
 
 ;; windows config
 
