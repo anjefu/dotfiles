@@ -20,6 +20,7 @@ if [ "`uname -s`" == "Darwin" ]; then
    export PKG_CONFIG_PATH="/Library/Frameworks/Mono.framework/Versions/Current/lib/pkgconfig:${PKG_CONFIG_PATH}"
    export JAVA_HOME="/System/Library/Frameworks/JavaVM.framework/Versions/CurrentJDK/Home"
    export EDITOR="/usr/local/bin/emacsclient --alternate-editor emacs"
+   export VISUAL="/usr/local/bin/emacsclient --alternate-editor emacs"
 
    export CLICOLOR=1
    # export LSCOLORS=ExFxCxDxBxegedabagacad # light background
@@ -30,6 +31,7 @@ else
    export PATH="/opt/android-sdk/tools:${PATH}"
    export PATH="${HOME}/.cabal/bin:${PATH}"
    export EDITOR="/usr/bin/emacsclient --alternate-editor emacs"
+   export VISUAL="/usr/bin/emacsclient --alternate-editor emacs"
    export GPG_TTY=$(tty)
    alias ls="ls --color=auto"
 
