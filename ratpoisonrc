@@ -1,6 +1,0 @@
-startup_message off
-
-escape C-z
-
-bind e exec emacs
-bind u exec chromium
