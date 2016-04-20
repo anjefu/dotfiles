@@ -1,3 +1,3 @@
-setenv GNUTERM 'x11'
+setenv GNUTERM 'qt'
 PS1('>> ')
 PS2('> ')
