@@ -7,10 +7,10 @@ xrdb -merge ~/.Xresources
 ~/projects/scripts/setup-background.sh
 
 # Set up SCIM input method
-export XMODIFIERS=@im=SCIM
+#export XMODIFIERS=@im=SCIM
 # export GTK_IM_MODULE="scim"  # (breaks pinentry-gtk)
-export QT_IM_MODULE="scim"
-scim -d
+#export QT_IM_MODULE="scim"
+#scim -d
 
 # Set up CUPS (for printing to USB printers)
 # export CUPS_SERVER=localhost
