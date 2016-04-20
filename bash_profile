@@ -12,7 +12,7 @@ export PATH="/usr/local/sbin:${PATH}"
 export PATH="/usr/local/mysql/bin:${PATH}"
 
 export LC_ALL="en_US.UTF-8"
-export PS1="\w \$ "
+export PS1="\h:\w \$ "
 
 if [ "`uname -s`" == "Darwin" ]; then
    # OS X
