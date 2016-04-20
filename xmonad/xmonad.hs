@@ -1,3 +1,4 @@
+import Graphics.X11.ExtraTypes.XF86
 import System.IO
 import XMonad
 import XMonad.Hooks.DynamicLog
@@ -7,14 +8,11 @@ import XMonad.Layout.NoBorders
 import XMonad.Layout.Spacing
 import XMonad.Layout.ThreeColumns
 import XMonad.Layout.MultiColumns
-import XMonad.Util.Run (spawnPipe)
 import XMonad.Util.EZConfig (additionalKeys)
-import Graphics.X11.ExtraTypes.XF86
+import XMonad.Util.Run (spawnPipe)
 
 myManageHook = composeAll
-  [ resource =? "emacs"     --> doShift "1"
-  , resource =? "Navigator" --> doShift "2"
-  , resource =? "Mail"      --> doShift "8"
+  [ resource =? "Mail"      --> doShift "8"
   , manageDocks
   ]
 
@@ -23,6 +21,7 @@ myTerminal = "urxvt"
 myKeys = [ ((mod4Mask .|. shiftMask, xK_f), spawn "~/projects/scripts/scim-open-app.sh firefox")
          , ((mod4Mask .|. shiftMask, xK_c), spawn "~/projects/scripts/scim-open-app.sh google-chrome-stable")
          , ((mod4Mask .|. shiftMask, xK_m), spawn "~/projects/scripts/scim-open-app.sh thunderbird")
+         , ((mod4Mask .|. shiftMask, xK_i), spawn "~/projects/scripts/invert-colors.sh")
          , ((mod4Mask .|. shiftMask, xK_t), spawn "emacs")
          , ((mod4Mask .|. shiftMask, xK_l), spawn "light-locker-command --lock")
          , ((mod4Mask .|. shiftMask, xK_n), spawn "pcmanfm")
@@ -40,7 +39,7 @@ myKeys = [ ((mod4Mask .|. shiftMask, xK_f), spawn "~/projects/scripts/scim-open-
          , ((0, xF86XK_AudioPrev)         , spawn "ncmpcpp prev")
          , ((0, xF86XK_AudioNext)         , spawn "ncmpcpp next")
          , ((0, xK_Print)                 , spawn "scrot")
---         , ((mod4Mask .|. shiftMask , xK_Print) , spawn "scrot -s")
+         , ((mod4Mask .|. shiftMask , xK_Print) , spawn "sleep 0.2; scrot -s")
          , ((0, xF86XK_ScreenSaver)       , spawn "xcreensaver-command --lock")
          ]
 
@@ -58,11 +57,12 @@ myLayouts =   (smartSpacing s $ Tall nmaster delta ratio)
 
 main = do
   xmproc <- spawnPipe "xmobar"
-  xmonad $ defaultConfig
+  xmonad $ def
          { workspaces         = map show [1..9]
          , modMask            = mod4Mask
          , normalBorderColor  = "#555555"
-         , focusedBorderColor = "#335533"
+         , focusedBorderColor = "#0055AA"
+         , borderWidth        = 3
          , manageHook         = myManageHook <+> manageHook defaultConfig
          , layoutHook         = avoidStruts . smartBorders $ myLayouts
          , terminal           = myTerminal
