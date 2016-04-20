@@ -23,11 +23,13 @@
                             csharp-mode
                             erc-hl-nicks
                             haskell-mode
+                            lua-mode
                             magit
                             markdown-mode
                             scala-mode
                             slime
-                            sml-mode)
+                            sml-mode
+                            vala-mode)
         "A list of packages to ensure are installed at launch.")
 
       (dolist (p my-packages)
@@ -36,7 +38,8 @@
 
 
 ; Environment
-(setenv "PAGER" "/bin/cat")
+(setenv "PAGER" (executable-find "cat"))
+(setq epg-gpg-program "gpg2")
 
 ; Mac OS X
 (setq mac-command-modifier 'meta)
@@ -52,7 +55,7 @@
 (fset 'yes-or-no-p 'y-or-n-p)
 (if (fboundp 'scroll-bar-mode) (scroll-bar-mode -1))
 (if (fboundp 'tool-bar-mode) (tool-bar-mode -1))
-; (if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
+(if (fboundp 'menu-bar-mode) (menu-bar-mode -1))
 (set-frame-parameter (selected-frame) 'alpha 95)
 
 ; Set PATH
@@ -116,7 +119,7 @@
   (switch-to-next-buffer))
 
 ; Fonts
-(set-face-attribute 'default nil :height 140)
+(set-face-attribute 'default nil :height 100)
 (set-frame-font "Inconsolata" nil t)
 
 (global-set-key (kbd "C-x 2") 'vsplit-last-buffer)
@@ -132,10 +135,6 @@
 ; (bbdb-initialize)
 
 ;; clisp config
-
-; (defvar common-lisp-hyperspec-root "~/.emacs.d/lisp/HyperSpec-7-0/HyperSpec/")
-; (defvar common-lisp-hyperspec-symbol-table (concat common-lisp-hyperspec-root "Data/Map_Sym.txt"))
-
 (if (eq system-type 'darwin)
     (setq inferior-lisp-program "/usr/local/bin/sbcl")
     (setq inferior-lisp-program "/usr/bin/sbcl"))
@@ -169,11 +168,10 @@
                                    (erc :server "irc.freenode.net" :port "6667"
                                         :nick "anjefu" :full-name "anjefu")))
          (setq erc-autojoin-channels-alist '(("freenode.net"
-;                                              "#emacs"
+                                              "#emacs"
                                               "#haskell"
-;                                              "#haskell-hacphi"
-;                                              "#opensim"
-;                                              "#opensim-dev"
+                                              "#opensim"
+                                              "#opensim-dev"
                                               "#oplss"
                                               )))
 
@@ -255,7 +253,8 @@
 (autoload 'markdown-mode "markdown-mode.el" "Major mode for editing Markdown files" t)
 
 (load-file (let ((coding-system-for-read 'utf-8))
-              (shell-command-to-string "agda-mode locate")))
+             (shell-command-to-string "agda-mode locate")))
+(require 'agda-input)
 
 (add-to-list 'auto-mode-alist '("CMakeLists\\.txt\\'" . cmake-mode))
 (add-to-list 'auto-mode-alist '("\\.cl$" . lisp-mode))
@@ -271,6 +270,8 @@
     (progn
       (add-to-list 'load-path (expand-file-name "~/third-party/llvm/utils/emacs"))
       (require 'llvm-mode)))
+
+(require 'julia-mode)
 
 ;; haskell-mode
 (add-hook 'haskell-mode-hook 'turn-on-haskell-indentation)
@@ -314,30 +315,25 @@
 ;; org config
 
 (require 'org)
-
-(setq org-hide-leading-stars t)
+(setq org-directory "~/projects/org")
+(setq org-default-notes-file (concat org-directory "/todo.org"))
+(define-key global-map "\C-cr" 'org-capture)
 (add-to-list 'auto-mode-alist '("\\.org$" . org-mode))
 (defun inbox ()
   (interactive)
   (find-file "~/projects/org/todo.org"))
 (define-key global-map "\C-ca" 'org-agenda)
+(setq org-hide-leading-stars t)
 (setq org-todo-keywords '("TODO(t)" "STARTED(s)" "WAITING(w)" "DONE(d)"))
 (setq org-agenda-files '("~/projects/org/todo.org"))
 ; (setq org-agenda-include-diary t)
 (setq org-agenda-include-all-todo t)
 (setq org-agenda-start-on-weekday nil)
-(setq org-directory "~/projects/org")
-
-(require 'remember)
-; (org-remember-insinuate)
-(setq org-directory "~/projects/org/")
-(setq org-default-notes-file (concat org-directory "todo.org"))
-(setq org-remember-templates
-      '((?t "* %?\n  %i\n  %a" "~/projects/org/todo.org" "Inbox")))
-(setq remember-annotation-functions '(org-remember-annotation))
-(setq remember-handler-functions '(org-remember-handler))
-(add-hook 'remember-mode-hook 'org-remember-apply-template)
-(define-key global-map "\C-cr" 'remember)
+(setq org-capture-templates
+      '(("t" "Todo" entry (file+headline "~/projects/org/todo.org" "Tasks")
+         "* TODO %?\n  %i\n  %a")
+        ("j" "Journal" entry (file+datetree "~/projects/org/journal.org")
+         "* %?\nEntered on %U\n  %i\n  %a")))
 
 ;; proofgeneral config
 
@@ -422,3 +418,70 @@
 ;; server config
 
 (server-start)
+
+(defun setup-otg ()
+  (interactive)
+  (set-face-attribute 'default nil :height 100)
+  (find-file "~/projects/org/todo.org")
+  (org-agenda nil "a")
+  (org-agenda-day-view)
+  (org-agenda-goto-today)
+  (delete-other-windows)
+  (split-window-horizontally)
+  (split-window-horizontally)
+  (split-window-vertically)
+  (split-window-vertically)
+  (switch-to-buffer "*Org Agenda*")
+  (other-window 1)
+  (switch-to-buffer "todo.org")
+  (other-window 1)
+  (find-file "~/projects/org/journal.org")
+  (end-of-buffer)
+  (previous-line)
+  (org-cycle)
+  (end-of-buffer)
+  (previous-line)
+  (org-cycle)
+  (next-line)
+  (other-window 1)
+  (switch-to-buffer "*shell*")
+  (other-window 1)
+  (switch-to-buffer "*shell*")
+  (other-window -1)
+  (end-of-buffer)
+  (balance-windows))
+
+(defun setup-home ()
+  (interactive)
+  (set-face-attribute 'default nil :height 140)
+  (find-file "~/projects/org/todo.org")
+  (org-agenda nil "a")
+  (org-agenda-day-view)
+  (org-agenda-goto-today)
+  (delete-other-windows)
+  (split-window-horizontally)
+  (split-window-horizontally)
+  (split-window-horizontally)
+  (split-window-vertically)
+  (split-window-vertically)
+  (switch-to-buffer "*Org Agenda*")
+  (other-window 1)
+  (switch-to-buffer "todo.org")
+  (other-window 1)
+  (find-file "~/projects/org/journal.org")
+  (end-of-buffer)
+  (previous-line)
+  (org-cycle)
+  (end-of-buffer)
+  (previous-line)
+  (org-cycle)
+  (next-line)
+  (other-window 1)
+  (switch-to-buffer "*shell*")
+  (other-window 1)
+  (switch-to-buffer "*shell*")
+  (other-window 1)
+  (switch-to-buffer "*shell*")
+  (other-window -2)
+  (end-of-buffer)
+  (balance-windows))
